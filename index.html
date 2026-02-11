@@ -1,1572 +1,357 @@
 <!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Dumont Creamery - Fun Map Explorer 🍦</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-    <meta name="description" content="Explore Dumont Creamery locations with fun, creative map styles!">
-    <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-      :root {
-        --brand-color: #FF6B9D;
-        --brand-dark: #E5528A;
-        --brand-light: rgba(255, 107, 157, 0.15);
-        --accent-yellow: #FFD93D;
-        --accent-blue: #6BFFF8;
-        --accent-purple: #B56BFF;
-        --text-primary: #2d2d2d;
-        --text-secondary: #666;
-        --text-muted: #999;
-        --bg-primary: #ffffff;
-        --bg-secondary: #fef9f0;
-        --bg-gradient: linear-gradient(135deg, #FF6B9D 0%, #FFD93D 50%, #6BFFF8 100%);
-        --border-color: #ffd6e8;
-        --shadow-sm: 0 2px 8px rgba(255, 107, 157, 0.15);
-        --shadow-md: 0 4px 16px rgba(255, 107, 157, 0.2);
-        --shadow-lg: 0 8px 32px rgba(255, 107, 157, 0.25);
-        --radius-sm: 12px;
-        --radius-md: 16px;
-        --radius-lg: 24px;
-      }
 
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { height: 100%; font-family: 'Fredoka', system-ui, sans-serif; }
-
-      .app { display: flex; height: 100%; overflow: hidden; background: var(--bg-secondary); }
-
-      .sidebar {
-        width: 420px;
-        height: 100%;
-        background: var(--bg-primary);
-        display: flex;
-        flex-direction: column;
-        border-right: 3px solid var(--brand-color);
-        z-index: 10;
-        box-shadow: var(--shadow-lg);
-      }
-
-      .sidebar-header {
-        padding: 24px;
-        background: var(--bg-gradient);
-        color: white;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .sidebar-header::before {
-        content: "🍦🍨🧁🍰🎂";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 80px;
-        opacity: 0.15;
-        white-space: nowrap;
-        pointer-events: none;
-      }
-
-      .logo {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        margin-bottom: 8px;
-        position: relative;
-        z-index: 1;
-      }
-
-      .logo-icon {
-        width: 60px;
-        height: 60px;
-        background: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        animation: bounce 2s ease-in-out infinite;
-      }
-
-      @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-8px); }
-      }
-
-      .logo h1 {
-        font-size: 26px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-      }
-
-      .subtitle {
-        font-size: 15px;
-        opacity: 0.95;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        position: relative;
-        z-index: 1;
-      }
-
-      .location-count {
-        background: rgba(255,255,255,0.3);
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
-        backdrop-filter: blur(4px);
-      }
-
-      .controls {
-        padding: 16px 20px;
-        background: var(--bg-secondary);
-        border-bottom: 2px dashed var(--border-color);
-      }
-
-      .search-container {
-        position: relative;
-        margin-bottom: 14px;
-      }
-
-      .search-icon {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--brand-color);
-      }
-
-      .search-input {
-        width: 100%;
-        padding: 14px 16px 14px 48px;
-        border: 2px solid var(--border-color);
-        border-radius: var(--radius-md);
-        font-size: 15px;
-        font-family: inherit;
-        background: var(--bg-primary);
-        transition: all 0.3s;
-      }
-
-      .search-input:focus {
-        outline: none;
-        border-color: var(--brand-color);
-        box-shadow: 0 0 0 4px var(--brand-light);
-      }
-
-      .search-input::placeholder {
-        color: var(--text-muted);
-      }
-
-      .filter-row {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-
-      .filter-btn {
-        flex: 1;
-        min-width: 70px;
-        padding: 12px;
-        border: 2px solid var(--border-color);
-        border-radius: var(--radius-sm);
-        background: var(--bg-primary);
-        font-size: 13px;
-        font-family: inherit;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-      }
-
-      .filter-btn:hover {
-        border-color: var(--brand-color);
-        background: var(--brand-light);
-        transform: translateY(-2px);
-      }
-
-      .filter-btn.active {
-        background: var(--brand-color);
-        color: white;
-        border-color: var(--brand-color);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-sm);
-      }
-
-      .locate-btn {
-        padding: 12px 18px;
-        background: var(--brand-color);
-        color: white;
-        border: none;
-        border-radius: var(--radius-sm);
-        font-size: 14px;
-        font-family: inherit;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .locate-btn:hover {
-        background: var(--brand-dark);
-        transform: translateY(-3px);
-        box-shadow: var(--shadow-md);
-      }
-
-      .listings-container {
-        flex: 1;
-        overflow-y: auto;
-      }
-
-      .listings-header {
-        padding: 14px 20px;
-        background: var(--bg-secondary);
-        border-bottom: 2px dashed var(--border-color);
-        font-size: 13px;
-        font-weight: 700;
-        color: var(--brand-color);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        position: sticky;
-        top: 0;
-        z-index: 5;
-      }
-
-      .listing {
-        padding: 18px 20px;
-        border-bottom: 2px dashed var(--border-color);
-        cursor: pointer;
-        transition: all 0.2s;
-        position: relative;
-      }
-
-      .listing:hover {
-        background: var(--brand-light);
-        transform: translateX(4px);
-      }
-
-      .listing.active {
-        background: var(--brand-light);
-        border-left: 5px solid var(--brand-color);
-        padding-left: 15px;
-      }
-
-      .listing-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        margin-bottom: 8px;
-      }
-
-      .listing-title {
-        font-weight: 700;
-        font-size: 16px;
-        color: var(--text-primary);
-        line-height: 1.3;
-      }
-
-      .listing-market {
-        font-size: 11px;
-        font-weight: 700;
-        color: white;
-        background: var(--brand-color);
-        padding: 4px 10px;
-        border-radius: 20px;
-        white-space: nowrap;
-        margin-left: 12px;
-      }
-
-      .listing-address {
-        font-size: 14px;
-        color: var(--text-secondary);
-        line-height: 1.5;
-        margin-bottom: 10px;
-      }
-
-      .listing-details {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        margin-bottom: 10px;
-      }
-
-      .detail-item {
-        font-size: 12px;
-        background: var(--bg-secondary);
-        padding: 8px;
-        border-radius: 8px;
-        text-align: center;
-      }
-
-      .detail-label {
-        color: var(--text-muted);
-        display: block;
-        font-size: 10px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-
-      .detail-value {
-        color: var(--text-primary);
-        font-weight: 700;
-        font-size: 13px;
-      }
-
-      .listing-anchor {
-        font-size: 12px;
-        color: var(--text-muted);
-        font-style: italic;
-      }
-
-      .listing-broker {
-        font-size: 12px;
-        color: var(--text-secondary);
-        margin-top: 8px;
-      }
-
-      .map-container {
-        flex: 1;
-        position: relative;
-        min-height: 400px;
-        height: 100%;
-      }
-
-      #map {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        height: 100%;
-      }
-
-      .map-overlay {
-        position: absolute;
-        z-index: 1;
-      }
-
-      .style-switcher {
-        top: 16px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: var(--bg-primary);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-lg);
-        overflow: hidden;
-        display: flex;
-        border: 3px solid var(--brand-color);
-      }
-
-      .style-btn {
-        padding: 12px 16px;
-        border: none;
-        background: var(--bg-primary);
-        font-size: 13px;
-        font-family: inherit;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-        border-right: 2px solid var(--border-color);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      .style-btn:last-child {
-        border-right: none;
-      }
-
-      .style-btn:hover {
-        background: var(--brand-light);
-      }
-
-      .style-btn.active {
-        background: var(--brand-color);
-        color: white;
-      }
-
-      .style-btn span {
-        font-size: 16px;
-      }
-
-      .reset-btn {
-        bottom: 100px;
-        right: 16px;
-        background: var(--bg-primary);
-        border: 3px solid var(--brand-color);
-        border-radius: 50%;
-        width: 52px;
-        height: 52px;
-        cursor: pointer;
-        box-shadow: var(--shadow-md);
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .reset-btn:hover {
-        background: var(--brand-color);
-        transform: scale(1.1) rotate(360deg);
-      }
-
-      .reset-btn:hover svg {
-        stroke: white;
-      }
-
-      .marker {
-        cursor: pointer;
-        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
-      }
-
-      .marker:hover { transform: scale(1.25) rotate(10deg); }
-      .marker.active { transform: scale(1.3); z-index: 100 !important; }
-
-      .marker-logo {
-        width: 56px;
-        height: 56px;
-        background: linear-gradient(135deg, #FF6B9D, #FFD93D);
-        border-radius: 50%;
-        box-shadow: 0 4px 16px rgba(255, 107, 157, 0.5);
-        border: 4px solid white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: pulse 2s ease-in-out infinite;
-      }
-
-      @keyframes pulse {
-        0%, 100% { box-shadow: 0 4px 16px rgba(255, 107, 157, 0.5); }
-        50% { box-shadow: 0 4px 24px rgba(255, 107, 157, 0.8); }
-      }
-
-      .marker-emoji {
-        font-size: 28px;
-        line-height: 1;
-      }
-
-      .user-marker {
-        width: 24px;
-        height: 24px;
-        background: linear-gradient(135deg, #6BFFF8, #B56BFF);
-        border: 4px solid white;
-        border-radius: 50%;
-        box-shadow: 0 0 0 8px rgba(107, 255, 248, 0.3), var(--shadow-md);
-        animation: userPulse 2s ease-in-out infinite;
-      }
-
-      @keyframes userPulse {
-        0%, 100% { box-shadow: 0 0 0 8px rgba(107, 255, 248, 0.3), var(--shadow-md); }
-        50% { box-shadow: 0 0 0 20px rgba(181, 107, 255, 0.15), var(--shadow-md); }
-      }
-
-      .mapboxgl-popup { max-width: 360px !important; }
-
-      .mapboxgl-popup-content {
-        padding: 0;
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-lg);
-        overflow: hidden;
-        border: 3px solid var(--brand-color);
-      }
-
-      .mapboxgl-popup-close-button {
-        font-size: 28px;
-        padding: 8px 14px;
-        color: white;
-        right: 4px;
-        top: 4px;
-        z-index: 10;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      }
-
-      .popup-image {
-        width: 100%;
-        height: 150px;
-        object-fit: cover;
-      }
-
-      .popup-content {
-        padding: 18px 20px 20px;
-      }
-
-      .popup-title {
-        font-weight: 700;
-        color: var(--brand-color);
-        font-size: 18px;
-        margin-bottom: 4px;
-      }
-
-      .popup-market {
-        color: var(--text-muted);
-        font-size: 13px;
-        margin-bottom: 12px;
-      }
-
-      .popup-details {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-bottom: 14px;
-        padding: 12px;
-        background: var(--bg-secondary);
-        border-radius: var(--radius-sm);
-        border: 2px dashed var(--border-color);
-      }
-
-      .popup-detail {
-        font-size: 12px;
-      }
-
-      .popup-detail-label {
-        color: var(--text-muted);
-        font-size: 10px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-
-      .popup-detail-value {
-        color: var(--text-primary);
-        font-weight: 700;
-        font-size: 14px;
-      }
-
-      .popup-anchor {
-        font-size: 13px;
-        color: var(--text-secondary);
-        margin-bottom: 14px;
-      }
-
-      .popup-anchor strong {
-        color: var(--text-primary);
-      }
-
-      .popup-actions {
-        display: flex;
-        gap: 10px;
-      }
-
-      .popup-btn {
-        flex: 1;
-        padding: 12px 14px;
-        border-radius: var(--radius-sm);
-        font-size: 13px;
-        font-weight: 700;
-        cursor: pointer;
-        border: none;
-        text-align: center;
-        text-decoration: none;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-      }
-
-      .popup-btn-directions {
-        background: linear-gradient(135deg, #6BFFF8, #B56BFF);
-        color: white;
-      }
-
-      .popup-btn-directions:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-      }
-
-      .loading-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(255, 107, 157, 0.95), rgba(255, 217, 61, 0.95));
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        transition: opacity 0.4s;
-      }
-
-      .loading-overlay.hidden {
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      .loading-spinner {
-        width: 60px;
-        height: 60px;
-        border: 5px solid rgba(255,255,255,0.3);
-        border-top-color: white;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-      }
-
-      .loading-text {
-        margin-top: 20px;
-        font-size: 18px;
-        color: white;
-        font-weight: 600;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      }
-
-      .loading-emoji {
-        font-size: 48px;
-        margin-bottom: 16px;
-        animation: bounce 1s ease-in-out infinite;
-      }
-
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-
-      .empty-state {
-        padding: 48px 24px;
-        text-align: center;
-        color: var(--text-muted);
-      }
-
-      .empty-state-icon {
-        font-size: 56px;
-        margin-bottom: 16px;
-      }
-
-      .attribution {
-        position: absolute;
-        bottom: 8px;
-        left: 8px;
-        background: rgba(255,255,255,0.95);
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 10px;
-        color: var(--text-muted);
-        border: 2px solid var(--border-color);
-      }
-
-      .attribution a {
-        color: var(--brand-color);
-        font-weight: 600;
-      }
-
-      .fun-label {
-        position: absolute;
-        top: 70px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: white;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--brand-color);
-        box-shadow: var(--shadow-sm);
-        border: 2px solid var(--brand-color);
-        z-index: 1;
-        white-space: nowrap;
-      }
-
-      @media (max-width: 900px) {
-        .app {
-          flex-direction: column;
-          height: 100vh;
-          height: 100dvh;
-        }
-        .sidebar {
-          width: 100%;
-          height: 55%;
-          min-height: 300px;
-          border-right: none;
-          border-top: 3px solid var(--brand-color);
-          order: 2;
-          display: flex;
-          flex-direction: column;
-        }
-        .map-container {
-          height: 45%;
-          min-height: 200px;
-          order: 1;
-        }
-        .sidebar-header { padding: 12px 16px; flex-shrink: 0; }
-        .logo h1 { font-size: 18px; }
-        .controls { flex-shrink: 0; padding: 12px 16px; }
-        .listings-container {
-          flex: 1;
-          overflow-y: auto;
-          -webkit-overflow-scrolling: touch;
-        }
-        .style-switcher { top: 10px; }
-        .style-btn { padding: 8px 10px; font-size: 11px; }
-        .style-btn span { font-size: 14px; }
-        .fun-label { top: 58px; font-size: 10px; padding: 6px 12px; }
-      }
-
-      @media (max-width: 480px) {
-        .app {
-          height: 100vh;
-          height: 100dvh;
-        }
-        .sidebar {
-          height: 60%;
-          min-height: 350px;
-        }
-        .map-container {
-          height: 40%;
-          min-height: 180px;
-        }
-        .sidebar-header { padding: 10px 14px; }
-        .sidebar-header::before { font-size: 50px; }
-        .logo-icon { width: 40px; height: 40px; }
-        .logo-icon span { font-size: 22px !important; }
-        .logo h1 { font-size: 16px; }
-        .subtitle { font-size: 12px; }
-        .controls { padding: 10px 14px; }
-        .search-input { padding: 12px 14px 12px 42px; font-size: 14px; }
-        .filter-row { gap: 6px; }
-        .filter-btn { padding: 10px 6px; font-size: 11px; min-width: 50px; }
-        .locate-btn { padding: 10px 14px; font-size: 12px; }
-        .listing { padding: 14px 14px; }
-        .listing-title { font-size: 14px; }
-        .listing-address { font-size: 12px; }
-        .listing-details { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-        .detail-item { font-size: 11px; padding: 6px; }
-        .listing-anchor { font-size: 11px; }
-        .listing-broker { font-size: 11px; }
-        .listing-market { font-size: 10px; padding: 3px 8px; }
-        .marker-logo { width: 40px; height: 40px; }
-        .marker-emoji { font-size: 20px; }
-        .style-switcher {
-          top: 8px;
-          left: 8px;
-          right: 8px;
-          transform: none;
-          justify-content: space-around;
-        }
-        .style-btn { padding: 6px 8px; font-size: 9px; flex: 1; justify-content: center; }
-        .style-btn span { font-size: 12px; }
-        .reset-btn { bottom: 60px; right: 8px; width: 44px; height: 44px; }
-        .attribution { font-size: 8px; padding: 4px 8px; }
-        .fun-label { display: none; }
-
-        /* Hide default Mapbox popup on mobile */
-        .mapboxgl-popup { display: none !important; }
-      }
-
-      /* Mobile Bottom Sheet Popup */
-      .mobile-popup-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.4);
-        z-index: 2000;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-      }
-
-      .mobile-popup-overlay.visible {
-        opacity: 1;
-      }
-
-      .mobile-popup {
-        display: none;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: white;
-        border-radius: 24px 24px 0 0;
-        z-index: 2001;
-        transform: translateY(100%);
-        transition: transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
-        max-height: 85vh;
-        overflow: hidden;
-        box-shadow: 0 -8px 32px rgba(255, 107, 157, 0.3);
-      }
-
-      .mobile-popup.visible {
-        transform: translateY(0);
-      }
-
-      .mobile-popup-handle {
-        width: 48px;
-        height: 6px;
-        background: #ccc;
-        border-radius: 3px;
-        margin: 14px auto 10px;
-        cursor: grab;
-      }
-
-      .mobile-popup-handle::after {
-        content: '';
-        display: block;
-        width: 100%;
-        height: 40px;
-        margin-top: -17px;
-      }
-
-      .mobile-popup-close {
-        position: absolute;
-        top: 12px;
-        right: 16px;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: var(--brand-light);
-        border: none;
-        font-size: 20px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--brand-color);
-        z-index: 10;
-      }
-
-      .mobile-popup-image {
-        width: 100%;
-        height: 140px;
-        object-fit: cover;
-      }
-
-      .mobile-popup-body {
-        padding: 16px 20px 24px;
-        overflow-y: auto;
-        max-height: calc(85vh - 160px);
-        -webkit-overflow-scrolling: touch;
-      }
-
-      .mobile-popup-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--brand-color);
-        margin-bottom: 4px;
-      }
-
-      .mobile-popup-address {
-        font-size: 14px;
-        color: var(--text-muted);
-        margin-bottom: 16px;
-      }
-
-      .mobile-popup-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        margin-bottom: 16px;
-      }
-
-      .mobile-popup-stat {
-        background: var(--bg-secondary);
-        padding: 12px;
-        border-radius: 12px;
-        text-align: center;
-        border: 2px dashed var(--border-color);
-      }
-
-      .mobile-popup-stat-label {
-        font-size: 10px;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-
-      .mobile-popup-stat-value {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--text-primary);
-      }
-
-      .mobile-popup-anchor {
-        font-size: 13px;
-        color: var(--text-secondary);
-        margin-bottom: 16px;
-        line-height: 1.5;
-      }
-
-      .mobile-popup-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        width: 100%;
-        padding: 16px;
-        background: linear-gradient(135deg, #6BFFF8, #B56BFF);
-        color: white;
-        border: none;
-        border-radius: 16px;
-        font-size: 16px;
-        font-weight: 700;
-        font-family: inherit;
-        cursor: pointer;
-        text-decoration: none;
-        margin-bottom: env(safe-area-inset-bottom);
-      }
-
-      @media (min-width: 481px) {
-        .mobile-popup-overlay,
-        .mobile-popup {
-          display: none !important;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .mobile-popup-overlay,
-        .mobile-popup {
-          display: block;
-        }
-      }
-
-      @supports (padding: max(0px)) {
-        @media (max-width: 480px) {
-          .sidebar {
-            padding-bottom: env(safe-area-inset-bottom);
-          }
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="app">
-      <div class="sidebar">
-        <div class="sidebar-header">
-          <div class="logo">
-            <div class="logo-icon">
-              <span style="font-size: 32px;">🍦</span>
-            </div>
-            <h1>Dumont Creamery</h1>
-          </div>
-          <div class="subtitle">
-            Fun Map Explorer ✨
-            <span class="location-count" id="location-count">12 sites</span>
-          </div>
-        </div>
-
-        <div class="controls">
-          <div class="search-container">
-            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
-            <input type="text" class="search-input" id="search-input" placeholder="Search for ice cream spots... 🔍">
-          </div>
-          <div class="filter-row">
-            <button class="filter-btn active" data-filter="all">All ✨</button>
-            <button class="filter-btn" data-filter="ashburn">Ashburn</button>
-            <button class="filter-btn" data-filter="herndon">Herndon</button>
-            <button class="filter-btn" data-filter="sterling">Sterling</button>
-            <button class="filter-btn" data-filter="leesburg">Leesburg</button>
-          </div>
-          <div class="filter-row" style="margin-top: 10px;">
-            <button class="locate-btn" id="locate-btn">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M12 2v4m0 12v4M2 12h4m12 0h4"></path>
-              </svg>
-              Find Me! 📍
-            </button>
-          </div>
-        </div>
-
-        <div class="listings-container">
-          <div class="listings-header" id="listings-header">🍨 All Available Sites</div>
-          <div id="listings"></div>
-        </div>
-      </div>
-
-      <div class="map-container">
-        <div id="map"></div>
-
-        <div class="map-overlay style-switcher">
-          <button class="style-btn active" data-style="outdoors"><span>🏔️</span> Outdoors</button>
-          <button class="style-btn" data-style="light"><span>🌤️</span> Light</button>
-          <button class="style-btn" data-style="satellite"><span>🛰️</span> Satellite</button>
-          <button class="style-btn" data-style="navigation"><span>🌙</span> Night</button>
-        </div>
-
-        <div class="fun-label" id="style-label">🏔️ Outdoors - Terrain & Trails View</div>
-
-        <button class="map-overlay reset-btn" id="reset-btn" title="Reset view">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF6B9D" stroke-width="2.5">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-            <path d="M3 3v5h5"></path>
-          </svg>
-        </button>
-
-        <div class="attribution">
-          Geocoding by <a href="https://www.geoapify.com/" target="_blank">Geoapify</a> | Made with 💕
-        </div>
-
-        <div class="loading-overlay" id="loading">
-          <div class="loading-emoji">🍦</div>
-          <div class="loading-spinner"></div>
-          <div class="loading-text">Scooping up the map...</div>
-        </div>
-
-      </div>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Southern Blues Restaurant - Site Survey Map</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1B3A5C; --green:#2E7D32; --orange:#E65100; --purple:#5e35b1; --white:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Inter',system-ui,sans-serif}
+.app{display:flex;height:100%;overflow:hidden}
+.sidebar{
+  width:380px;height:100%;background:var(--white);
+  display:flex;flex-direction:column;border-right:1px solid #e5e5e5;z-index:10
+}
+.sidebar-header{
+  padding:20px 24px;background:linear-gradient(135deg,var(--navy) 0%,#0d2240 100%);color:#fff
+}
+.sidebar-header h1{font-size:18px;font-weight:700;margin-bottom:4px}
+.sidebar-header p{font-size:12px;opacity:.8}
+.legend{padding:12px 24px;border-bottom:1px solid #eee;display:flex;gap:16px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#666}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.property-list{flex:1;overflow-y:auto}
+.property-card{
+  padding:16px 24px;border-bottom:1px solid #f0f0f0;cursor:pointer;
+  transition:background .15s;border-left:3px solid transparent
+}
+.property-card:hover{background:#f5f8fc}
+.property-card.active{background:#eef3fa;border-left-color:var(--navy)}
+.card-rank{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:24px;height:24px;border-radius:50%;
+  background:var(--navy);color:#fff;font-size:12px;font-weight:700;
+  margin-right:8px;flex-shrink:0;vertical-align:middle
+}
+.card-rank.rank-top{background:var(--green)}
+.card-rank.rank-conditional{background:var(--orange)}
+.card-rank.rank-premium{background:var(--purple)}
+.card-header{display:flex;align-items:center}
+.card-name{font-weight:600;font-size:14px;color:#1a1a1a}
+.card-location{font-size:12px;color:#888;margin-top:2px;margin-left:32px}
+.card-details{display:flex;gap:12px;margin-top:8px;margin-left:32px;flex-wrap:wrap}
+.card-detail{font-size:11px;color:#555}
+.card-detail strong{color:#1a1a1a}
+.card-badge{
+  display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;
+  margin-top:6px;margin-left:32px
+}
+.badge-top{background:#e8f5e9;color:var(--green)}
+.badge-strong{background:#e8f5e9;color:var(--green)}
+.badge-solid{background:#e3f2fd;color:var(--navy)}
+.badge-conditional{background:#fff3e0;color:var(--orange)}
+.badge-premium{background:#ede7f6;color:var(--purple)}
+.map-wrap{position:relative;flex:1;height:100%}
+#map{width:100%;height:100%}
+.mapboxgl-popup{max-width:320px !important}
+.mapboxgl-popup-content{
+  padding:0 !important;border-radius:12px !important;overflow:hidden;
+  box-shadow:0 8px 30px rgba(0,0,0,.18) !important;font-family:'Inter',sans-serif !important
+}
+.mapboxgl-popup-close-button{font-size:18px;padding:4px 8px;color:#999}
+.popup-header{padding:14px 16px 10px;border-bottom:1px solid #f0f0f0}
+.popup-name{font-weight:700;font-size:15px;color:var(--navy)}
+.popup-address{font-size:11px;color:#999;margin-top:2px}
+.popup-body{padding:10px 16px 14px}
+.popup-row{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  font-size:12px;padding:5px 0;border-bottom:1px solid #f8f8f8
+}
+.popup-row:last-child{border-bottom:none}
+.popup-label{color:#999;flex-shrink:0;margin-right:12px}
+.popup-value{font-weight:600;color:#333;text-align:right}
+.popup-exclusive{
+  margin-top:8px;padding:8px 10px;border-radius:8px;background:#fff3e0;
+  font-size:11px;color:#bf360c;line-height:1.4
+}
+.popup-badge-wrap{text-align:center;padding:8px 16px 12px}
+.style-switcher{
+  position:absolute;top:12px;right:12px;z-index:5;display:flex;border-radius:8px;overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.15)
+}
+.style-btn{
+  padding:8px 14px;font-size:12px;font-family:'Inter',sans-serif;border:none;cursor:pointer;
+  background:#fff;color:#555;font-weight:500;transition:all .15s;border-right:1px solid #eee
+}
+.style-btn:last-child{border-right:none}
+.style-btn.active{background:var(--navy);color:#fff}
+.style-btn:hover:not(.active){background:#f0f0f0}
+@media (max-width:768px){
+  .app{flex-direction:column}
+  .sidebar{width:100%;height:45%;order:2}
+  .map-wrap{height:55%;order:1}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h1>Southern Blues Restaurant</h1>
+      <p>Site Survey - 7 Available Locations | Prepared by Renaud Consulting</p>
     </div>
-
-    <!-- Mobile Bottom Sheet Popup -->
-    <div class="mobile-popup-overlay" id="mobile-overlay"></div>
-    <div class="mobile-popup" id="mobile-popup">
-      <div class="mobile-popup-handle"></div>
-      <button class="mobile-popup-close" id="mobile-close">✕</button>
-      <img class="mobile-popup-image" id="mobile-image" src="" alt="">
-      <div class="mobile-popup-body">
-        <div class="mobile-popup-title" id="mobile-title"></div>
-        <div class="mobile-popup-address" id="mobile-address"></div>
-        <div class="mobile-popup-grid">
-          <div class="mobile-popup-stat">
-            <div class="mobile-popup-stat-label">Size</div>
-            <div class="mobile-popup-stat-value" id="mobile-size"></div>
-          </div>
-          <div class="mobile-popup-stat">
-            <div class="mobile-popup-stat-label">Rent</div>
-            <div class="mobile-popup-stat-value" id="mobile-rent"></div>
-          </div>
-          <div class="mobile-popup-stat">
-            <div class="mobile-popup-stat-label">NNN's</div>
-            <div class="mobile-popup-stat-value" id="mobile-nnns"></div>
-          </div>
-          <div class="mobile-popup-stat">
-            <div class="mobile-popup-stat-label">Monthly</div>
-            <div class="mobile-popup-stat-value" id="mobile-monthly"></div>
-          </div>
-        </div>
-        <div class="mobile-popup-anchor" id="mobile-anchor"></div>
-        <a class="mobile-popup-btn" id="mobile-directions" href="#" target="_blank">
-          🧭 Get Directions
-        </a>
-      </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#2E7D32"></div> Top Pick</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#1B3A5C"></div> Strong / Solid</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#E65100"></div> Conditional</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#5e35b1"></div> Premium</div>
     </div>
+    <div class="property-list" id="propertyList"></div>
+  </div>
 
-    <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
-    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-    <script>
-      // Fun creative Mapbox styles!
-      const mapStyles = {
-        outdoors: 'mapbox://styles/mapbox/outdoors-v12',
-        light: 'mapbox://styles/mapbox/light-v11',
-        satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
-        navigation: 'mapbox://styles/mapbox/navigation-night-v1'
-      };
+  <div class="map-wrap">
+    <div id="map"></div>
+    <div class="style-switcher" id="styleSwitcher" aria-label="Map style switcher">
+      <button class="style-btn" data-style="kepler" type="button">Kepler</button>
+      <button class="style-btn active" data-style="satellite" type="button">Satellite</button>
+      <button class="style-btn" data-style="streets" type="button">Streets</button>
+      <button class="style-btn" data-style="dark" type="button">Dark</button>
+    </div>
+  </div>
+</div>
 
-      const styleLabels = {
-        outdoors: '🏔️ Outdoors - Terrain & Trails View',
-        light: '🌤️ Light - Clean & Minimal',
-        satellite: '🛰️ Satellite - Real Imagery',
-        navigation: '🌙 Night - Neon Navigation'
-      };
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
 
-      // Hardcoded API key - no dialog needed
-      mapboxgl.accessToken = 'pk.eyJ1IjoiYW5kcmV3cDc1IiwiYSI6ImNtYjhqcmlteDBuOG8yaHB3bXNhb2g0b2EifQ.AFvwEVVNzNQD_D37euKBug';
+<script>
+(function () {
+  "use strict";
 
-      const mapConfig = {
-        center: [-77.47, 38.98],
-        zoom: 10,
-        pitch: 0,
-        defaultStyle: 'outdoors'
-      };
+  mapboxgl.accessToken =
+    "pk.eyJ1IjoiYW5kcmV3cDc1IiwiYSI6ImNtYjhqcmlteDBuOG8yaHB3bXNhb2g0b2EifQ.AFvwEVVNzNQD_D37euKBug";
 
-      // Location data with ACCURATE Geoapify coordinates
-      const locations = [
-        { id: 1, name: "Ashbrook Commons", address: "20070 Ashbrook Commons Plaza", market: "Ashburn", size: 3036, rent: 51.0, nnns: "$7.60 PSF", anchor: "Harris Teeter, Onelife Fitness", broker: "Alex Willner", company: "KLNB", monthlyRent: 14825.80, lat: 39.0604156, lng: -77.4707637 },
-        { id: 2, name: "Loudon Station", address: "43805 Central Station Dr", market: "Ashburn", size: 1398, rent: 40.0, nnns: "$10 PSF", anchor: "Burger 21, Famous Toastery, Senor Tequilas", broker: "Tony Thur", company: "Willard", monthlyRent: 5825.00, lat: 39.006965, lng: -77.486426 },
-        { id: 3, name: "Atlas Walk at Gateway", address: "7336 Atlas Walk Way", market: "Gainesville", size: 1622, rent: 60.0, nnns: "$12.73 PSF", anchor: "IHOP, Rockwood American, Shotted Café", broker: "Maddie Turner", company: "Federal", monthlyRent: 9830.67, lat: 38.796732457938795, lng: -77.60793467881763 },
-        { id: 4, name: "Herndon Centre", address: "460-492 Elden St", market: "Herndon", size: 1460, rent: 42.0, nnns: "$9.32 PSF", anchor: "Moms Organic Market, Lotte Market, Sprouts", broker: "Arthur Matarazzo", company: "A.J. Dwoskin & Associates", monthlyRent: 6243.93, lat: 38.96855635, lng: -77.37625295166515 },
-        { id: 5, name: "Arrowbrook Centre", address: "2320-2340 Silver Arrow Way", market: "Herndon", size: 2007, rent: 46.0, nnns: "$11.50 PSF", anchor: "Peter Chang, Kyuramen", broker: "Daniel Patrizio", company: "Paraclete Realty", monthlyRent: 9616.87, lat: 38.954799, lng: -77.407832 },
-        { id: 6, name: "Shenandoah Square", address: "950 Edwards Ferry Rd NE", market: "Leesburg", size: 2500, rent: 50.0, nnns: "$4.50 PSF", anchor: "Floor & Décor, Leesburg Public House", broker: "Pat O'Meara", company: "Rappaport", monthlyRent: 11354.16, lat: 39.11377931009026, lng: -77.53882997930152 },
-        { id: 7, name: "1400 Russell Branch Parkway", address: "1400 Russell Branch Parkway", market: "Leesburg", size: 1800, rent: null, nnns: null, anchor: "Wegmans, LA Fitness, CMX Theatre", broker: "Rob Meeks", company: "Segall Group", monthlyRent: null, lat: 39.093047, lng: -77.52798 },
-        { id: 8, name: "Dulles Market Square", address: "23520 Overland Dr", market: "Sterling", size: 2047, rent: 37.0, nnns: "$5.20 PSF", anchor: "Kumon, Ultrazone Laser Tag, Kidstrong Stone Ridge", broker: "Billy Kelly", company: "KLNB", monthlyRent: 7198.61, lat: 38.96215305, lng: -77.49702855152344 },
-        { id: 9, name: "Heritage Plaza", address: "46005 Regal Plaza", market: "Sterling", size: 1770, rent: null, nnns: "$10 PSF", anchor: "Ledo's Pizza, Chicago's Pizza Twist", broker: "Victor Salcido", company: "KLNB", monthlyRent: null, lat: 39.035956, lng: -77.408204 },
-        { id: 10, name: "Loudon Station - BLVD Commons", address: "43805 Central Station Dr - BLVD Commons", market: "Ashburn", size: 1825, rent: null, nnns: null, anchor: "AMC Theatre, Sola Salon Studios, Famous Toastery", broker: "Jessy Toor", company: "Comstock", monthlyRent: null, lat: 39.006965, lng: -77.486426 },
-        { id: 11, name: "South Riding Town Center", address: "43063 Peacock Market Plaza", market: "South Riding", size: 2213, rent: 34.0, nnns: "$9.52 PSF", anchor: "Triveni Supermarket, Starbucks, Back to Rock", broker: "Billy Kelly", company: "KLNB", monthlyRent: 8025.81, lat: 38.9143571, lng: -77.513547 },
-        { id: 12, name: "Ashburn Farm Village Center", address: "43761 Parkhurst Plaza", market: "Ashburn", size: 1800, rent: 55.0, nnns: "$7.46 PSF", anchor: "Patel Brothers", broker: "Jessica Sena", company: "Regency", monthlyRent: null, lat: 39.0287081, lng: -77.4871678 }
-      ];
+  var properties = [
+    { rank:1, name:"Hopkins Place", address:"2299 Johns Hopkins Rd, Gambrills, MD 21054",
+      lat:39.0288, lng:-76.6844, sf:"\u00b12,650 SF", rent:"$34.50/SF all-in", monthly:"$7,619/mo",
+      rating:"TOP PICK", badgeClass:"badge-top", color:"#2E7D32", rankClass:"rank-top",
+      why:"Lowest rent, restaurant-ready (former Pizza Hut), no restrictions", exclusive:null },
+    { rank:2, name:"Hilltop Plaza", address:"6700 Race Track Rd, Bowie, MD 20715",
+      lat:38.9836, lng:-76.7299, sf:"2,428 SF", rent:"~$47/SF all-in", monthly:"$9,510/mo",
+      rating:"STRONG", badgeClass:"badge-strong", color:"#1B3A5C", rankClass:"",
+      why:"Dual grocery-anchored (Aldi + MOM\u2019s), flexible sizing",
+      exclusive:"Hangry Joe\u2019s chicken clause (50% threshold) \u2014 Southern Blues complies at ~30%" },
+    { rank:3, name:"Fairwood Greens", address:"12420 Fairwood Pkwy, Bowie, MD 20720",
+      lat:38.9654, lng:-76.7893, sf:"1,750 SF", rent:"$42.05/SF all-in", monthly:"$6,133/mo",
+      rating:"STRONG", badgeClass:"badge-strong", color:"#1B3A5C", rankClass:"",
+      why:"Safeway-anchored, lowest monthly cost, master-planned community", exclusive:null },
+    { rank:4, name:"Crofton Centre", address:"1501 Crofton Center, Crofton, MD 21114",
+      lat:39.0153, lng:-76.6956, sf:"3,035 SF", rent:"~$40/SF all-in", monthly:"$10,117/mo",
+      rating:"SOLID", badgeClass:"badge-solid", color:"#1B3A5C", rankClass:"",
+      why:"Highest traffic (66K ADT), richest demographics ($180K HHI)", exclusive:null },
+    { rank:5, name:"Bowie Marketplace", address:"15475 Annapolis Rd, Bowie, MD 20715",
+      lat:38.9778, lng:-76.7344, sf:"1,518\u20137,526 SF", rent:"$29\u2013$35/SF", monthly:"Varies",
+      rating:"CONDITIONAL", badgeClass:"badge-conditional", color:"#E65100", rankClass:"rank-conditional",
+      why:"Best co-tenancy + lowest rent/SF, but CFA exclusive issue",
+      exclusive:"Chick-fil-A clause (~25% threshold) \u2014 Southern Blues exceeds at ~30%" },
+    { rank:6, name:"Severna Park Gateway", address:"8529 Veterans Hwy, Millersville, MD 21108",
+      lat:39.0979, lng:-76.6226, sf:"2,800 SF", rent:"$43.75/SF all-in", monthly:"$10,208/mo",
+      rating:"SOLID", badgeClass:"badge-solid", color:"#1B3A5C", rankClass:"",
+      why:"2nd-gen endcap (former 7-Eleven), available now", exclusive:null },
+    { rank:7, name:"Gambrills Center", address:"804 Crain Hwy, Gambrills, MD 21054",
+      lat:39.0455, lng:-76.6667, sf:"2,700 SF", rent:"$56.50/SF all-in", monthly:"$12,713/mo",
+      rating:"PREMIUM", badgeClass:"badge-premium", color:"#5e35b1", rankClass:"rank-premium",
+      why:"New build validated by Starbucks, highest rent in survey", exclusive:null }
+  ];
 
-      let map;
-      let markers = [];
-      let userLocation = null;
-      let userMarker = null;
-      let activeId = null;
-      let currentFilter = 'all';
-      let currentStyle = 'outdoors';
+  var mapStyleUrls = {
+    kepler: "mapbox://styles/mapbox/navigation-night-v1",
+    satellite: "mapbox://styles/mapbox/satellite-streets-v12",
+    streets: "mapbox://styles/mapbox/streets-v12",
+    dark: "mapbox://styles/mapbox/dark-v11"
+  };
 
-      // Initialize on page load
-      document.addEventListener('DOMContentLoaded', () => {
-        try {
-          initMap();
-          setupEventListeners();
-        } catch (e) {
-          console.error('Init error:', e);
-          document.getElementById('loading').classList.add('hidden');
-        }
+  var map, markers = [], activeCard = null, openPopup = null;
+
+  function buildPopupHTML(p) {
+    var exc = p.exclusive
+      ? '<div class="popup-exclusive">\u26A0\uFE0F ' + escapeHTML(p.exclusive) + '</div>'
+      : "";
+
+    return '' +
+      '<div class="popup-header">' +
+        '<div class="popup-name">' + p.rank + '. ' + escapeHTML(p.name) + '</div>' +
+        '<div class="popup-address">' + escapeHTML(p.address) + '</div>' +
+      '</div>' +
+      '<div class="popup-body">' +
+        '<div class="popup-row"><span class="popup-label">Available</span><span class="popup-value">' + escapeHTML(p.sf) + '</span></div>' +
+        '<div class="popup-row"><span class="popup-label">Rent</span><span class="popup-value">' + escapeHTML(p.rent) + '</span></div>' +
+        '<div class="popup-row"><span class="popup-label">Est. Monthly</span><span class="popup-value">' + escapeHTML(p.monthly) + '</span></div>' +
+        '<div class="popup-row"><span class="popup-label">Why</span><span class="popup-value" style="max-width:160px;font-size:11px">' + escapeHTML(p.why) + '</span></div>' +
+        exc +
+      '</div>' +
+      '<div class="popup-badge-wrap"><span class="card-badge ' + p.badgeClass + '">' + escapeHTML(p.rating) + '</span></div>';
+  }
+
+  function escapeHTML(str) {
+    return String(str == null ? "" : str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function clearMarkers() {
+    for (var i = 0; i < markers.length; i++) markers[i].remove();
+    markers = [];
+  }
+
+  function closeOpenPopup() {
+    if (openPopup) {
+      openPopup.remove();
+      openPopup = null;
+    }
+  }
+
+  function addAllMarkers() {
+    clearMarkers();
+    closeOpenPopup();
+
+    for (var j = 0; j < properties.length; j++) {
+      (function (idx) {
+        var p = properties[idx];
+
+        var el = document.createElement("div");
+        el.style.cssText =
+          "width:34px;height:34px;border-radius:50%;background:" + p.color +
+          ";border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;" +
+          "display:flex;align-items:center;justify-content:center;color:white;font-weight:700;" +
+          "font-size:14px;font-family:Inter,sans-serif;";
+        el.textContent = String(p.rank);
+
+        var popup = new mapboxgl.Popup({ offset: 20, maxWidth: "320px", closeButton: true })
+          .setHTML(buildPopupHTML(p));
+
+        popup.on("open", function () { openPopup = popup; });
+        popup.on("close", function () { if (openPopup === popup) openPopup = null; });
+
+        var marker = new mapboxgl.Marker({ element: el })
+          .setLngLat([p.lng, p.lat])
+          .setPopup(popup)
+          .addTo(map);
+
+        el.addEventListener("click", function () {
+          setActiveCardByIndex(idx);
+        });
+
+        markers.push(marker);
+      })(j);
+    }
+  }
+
+  function setActiveCardByIndex(idx) {
+    var list = document.getElementById("propertyList");
+    var cards = list.querySelectorAll(".property-card");
+    if (activeCard) activeCard.classList.remove("active");
+    if (cards[idx]) {
+      cards[idx].classList.add("active");
+      activeCard = cards[idx];
+      cards[idx].scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  }
+
+  function flyToAndOpen(idx) {
+    var p = properties[idx];
+    closeOpenPopup();
+
+    map.flyTo({ center: [p.lng, p.lat], zoom: 14, pitch: 45, duration: 1200 });
+
+    map.once("moveend", function () {
+      markers[idx].togglePopup();
+      openPopup = markers[idx].getPopup();
+    });
+  }
+
+  function buildSidebar() {
+    var list = document.getElementById("propertyList");
+    list.innerHTML = "";
+
+    for (var i = 0; i < properties.length; i++) {
+      (function (idx) {
+        var p = properties[idx];
+
+        var card = document.createElement("div");
+        card.className = "property-card";
+
+        var rc = p.rankClass ? " " + p.rankClass : "";
+        card.innerHTML =
+          '<div class="card-header">' +
+            '<span class="card-rank' + rc + '">' + p.rank + '</span>' +
+            '<span class="card-name">' + escapeHTML(p.name) + '</span>' +
+          '</div>' +
+          '<div class="card-location">' + escapeHTML(p.address) + '</div>' +
+          '<div class="card-details">' +
+            '<div class="card-detail"><strong>' + escapeHTML(p.sf) + '</strong></div>' +
+            '<div class="card-detail"><strong>' + escapeHTML(p.rent) + '</strong></div>' +
+            '<div class="card-detail"><strong>' + escapeHTML(p.monthly) + '</strong></div>' +
+          '</div>' +
+          '<div><span class="card-badge ' + p.badgeClass + '">' + escapeHTML(p.rating) + '</span></div>';
+
+        card.addEventListener("click", function () {
+          setActiveCardByIndex(idx);
+          flyToAndOpen(idx);
+        });
+
+        list.appendChild(card);
+      })(i);
+    }
+  }
+
+  function wireStyleSwitcher() {
+    var styleBtns = document.querySelectorAll("#styleSwitcher .style-btn");
+    for (var s = 0; s < styleBtns.length; s++) {
+      styleBtns[s].addEventListener("click", function () {
+        var styleName = this.getAttribute("data-style");
+        if (!mapStyleUrls[styleName]) return;
+
+        for (var b = 0; b < styleBtns.length; b++) styleBtns[b].classList.remove("active");
+        this.classList.add("active");
+
+        closeOpenPopup();
+        map.setStyle(mapStyleUrls[styleName]);
       });
-
-      function initMap() {
-        map = new mapboxgl.Map({
-          container: 'map',
-          style: mapStyles[mapConfig.defaultStyle],
-          center: mapConfig.center,
-          zoom: mapConfig.zoom,
-          pitch: mapConfig.pitch,
-          bearing: 0,
-          antialias: true
-        });
-
-        map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
-
-        map.on('load', () => {
-          document.getElementById('loading').classList.add('hidden');
-          map.resize();
-
-          // Add terrain for outdoors style
-          if (currentStyle === 'outdoors') {
-            addTerrain();
-          }
-
-          addMarkers();
-          buildListings();
-          fitBounds();
-        });
-
-        map.on('error', (e) => {
-          console.error('Map error:', e);
-          document.getElementById('loading').classList.add('hidden');
-        });
-
-        // Close popups when zoomed in close
-        map.on('zoom', () => {
-          if (map.getZoom() > 16) {
-            markers.forEach(m => m.marker.getPopup().remove());
-            // Also close mobile popup when zoomed in close
-            if (isMobile()) {
-              hideMobilePopup();
-            }
-          }
-        });
-      }
-
-      function addTerrain() {
-        if (!map.getSource('mapbox-dem')) {
-          map.addSource('mapbox-dem', {
-            type: 'raster-dem',
-            url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-            tileSize: 512,
-            maxzoom: 14
-          });
-          map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
-        }
-      }
-
-      function removeTerrain() {
-        if (map.getTerrain()) {
-          map.setTerrain(null);
-        }
-      }
-
-      function createMarkerEl(location) {
-        const el = document.createElement('div');
-        el.className = 'marker';
-        el.dataset.id = location.id;
-        el.innerHTML = `<div class="marker-logo"><span class="marker-emoji">🍦</span></div>`;
-        return el;
-      }
-
-      function addMarkers() {
-        locations.forEach((loc) => {
-          const el = createMarkerEl(loc);
-          const popup = new mapboxgl.Popup({ offset: 25, closeButton: true, maxWidth: '360px' })
-            .setHTML(createPopupHTML(loc));
-
-          const marker = new mapboxgl.Marker(el)
-            .setLngLat([loc.lng, loc.lat])
-            .setPopup(popup)
-            .addTo(map);
-
-          el.addEventListener('click', () => {
-            flyTo(loc);
-            setActive(loc.id);
-            if (isMobile()) {
-              showMobilePopup(loc);
-            }
-          });
-
-          markers.push({ marker, location: loc, element: el });
-        });
-      }
-
-      function createPopupHTML(loc) {
-        const imgUrl = `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/pin-l-ice-cream+FF6B9D(${loc.lng},${loc.lat})/${loc.lng},${loc.lat},17,0/400x150@2x?access_token=${mapboxgl.accessToken}`;
-        const dirUrl = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`;
-
-        const rentDisplay = loc.rent ? `$${loc.rent}/SF` : 'Call for pricing';
-        const monthlyDisplay = loc.monthlyRent ? `$${loc.monthlyRent.toLocaleString()}/mo` : 'TBD';
-
-        return `
-          <img class="popup-image" src="${imgUrl}" alt="${loc.name}">
-          <div class="popup-content">
-            <div class="popup-title">🍦 ${loc.name}</div>
-            <div class="popup-market">${loc.address} • ${loc.market}</div>
-            <div class="popup-details">
-              <div class="popup-detail">
-                <span class="popup-detail-label">Size</span>
-                <span class="popup-detail-value">${loc.size.toLocaleString()} SF</span>
-              </div>
-              <div class="popup-detail">
-                <span class="popup-detail-label">Rent</span>
-                <span class="popup-detail-value">${rentDisplay}</span>
-              </div>
-              <div class="popup-detail">
-                <span class="popup-detail-label">NNN's</span>
-                <span class="popup-detail-value">${loc.nnns || 'TBD'}</span>
-              </div>
-              <div class="popup-detail">
-                <span class="popup-detail-label">Monthly</span>
-                <span class="popup-detail-value">${monthlyDisplay}</span>
-              </div>
-            </div>
-            <div class="popup-anchor"><strong>🏪 Co-tenants:</strong> ${loc.anchor}</div>
-            <div class="popup-actions">
-              <a class="popup-btn popup-btn-directions" href="${dirUrl}" target="_blank">🧭 Get Directions</a>
-            </div>
-          </div>
-        `;
-      }
-
-      function buildListings(filter = '') {
-        const container = document.getElementById('listings');
-        const header = document.getElementById('listings-header');
-        container.innerHTML = '';
-
-        let filtered = locations.filter(l => {
-          const matchesSearch = l.name.toLowerCase().includes(filter.toLowerCase()) ||
-            l.market.toLowerCase().includes(filter.toLowerCase()) ||
-            l.address.toLowerCase().includes(filter.toLowerCase());
-
-          const matchesFilter = currentFilter === 'all' ||
-            l.market.toLowerCase() === currentFilter.toLowerCase();
-
-          return matchesSearch && matchesFilter;
-        });
-
-        if (userLocation) {
-          filtered = filtered.map(l => ({
-            ...l,
-            distance: turf.distance(turf.point([userLocation.lng, userLocation.lat]), turf.point([l.lng, l.lat]), { units: 'miles' })
-          })).sort((a, b) => a.distance - b.distance);
-        }
-
-        header.textContent = `🍨 ${filtered.length} Available Sites`;
-        document.getElementById('location-count').textContent = `${locations.length} sites`;
-
-        if (filtered.length === 0) {
-          container.innerHTML = `
-            <div class="empty-state">
-              <div class="empty-state-icon">😢</div>
-              <div class="empty-state-text">No ice cream spots found here!</div>
-            </div>
-          `;
-          return;
-        }
-
-        filtered.forEach((loc, i) => {
-          const el = document.createElement('div');
-          el.className = `listing${activeId === loc.id ? ' active' : ''}`;
-          el.dataset.id = loc.id;
-
-          const distHtml = loc.distance !== undefined
-            ? `<span style="color: #B56BFF; font-size: 12px; font-weight: 700;">📍 ${loc.distance.toFixed(1)} mi</span>`
-            : '';
-
-          const rentDisplay = loc.rent ? `$${loc.rent}/SF` : 'Call';
-          const monthlyDisplay = loc.monthlyRent ? `$${Math.round(loc.monthlyRent).toLocaleString()}/mo` : '';
-
-          el.innerHTML = `
-            <div class="listing-header">
-              <div class="listing-title">🍦 ${loc.name}</div>
-              <span class="listing-market">${loc.market}</span>
-            </div>
-            <div class="listing-address">${loc.address} ${distHtml}</div>
-            <div class="listing-details">
-              <div class="detail-item">
-                <span class="detail-label">Size</span>
-                <span class="detail-value">${loc.size.toLocaleString()} SF</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Rent</span>
-                <span class="detail-value">${rentDisplay}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">NNN's</span>
-                <span class="detail-value">${loc.nnns || 'TBD'}</span>
-              </div>
-            </div>
-            <div class="listing-anchor">🏪 Co-tenants: ${loc.anchor}</div>
-            <div class="listing-broker">📞 Contact: ${loc.broker} (${loc.company})</div>
-          `;
-
-          el.addEventListener('click', () => {
-            flyTo(loc);
-            setActive(loc.id);
-            if (isMobile()) {
-              showMobilePopup(loc);
-            } else {
-              openPopup(loc.id);
-            }
-          });
-
-          container.appendChild(el);
-        });
-      }
-
-      function flyTo(loc) {
-        map.flyTo({
-          center: [loc.lng, loc.lat],
-          zoom: 15,
-          pitch: 0,
-          bearing: 0,
-          duration: 1200,
-          essential: true
-        });
-      }
-
-      function setActive(id) {
-        activeId = id;
-        markers.forEach(m => m.element.classList.toggle('active', m.location.id === id));
-        document.querySelectorAll('.listing').forEach(el => {
-          const isActive = parseInt(el.dataset.id) === id;
-          el.classList.toggle('active', isActive);
-          if (isActive) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        });
-      }
-
-      function openPopup(id) {
-        markers.forEach(m => {
-          if (m.location.id === id) m.marker.togglePopup();
-          else m.marker.getPopup().remove();
-        });
-      }
-
-      function fitBounds() {
-        if (locations.length === 0) return;
-        const bounds = new mapboxgl.LngLatBounds();
-        locations.forEach(l => bounds.extend([l.lng, l.lat]));
-        map.fitBounds(bounds, { padding: 60, pitch: 0, duration: 1200 });
-      }
-
-      function filterMarkers() {
-        const bounds = new mapboxgl.LngLatBounds();
-        let visibleCount = 0;
-
-        markers.forEach(m => {
-          const matchesFilter = currentFilter === 'all' ||
-            m.location.market.toLowerCase() === currentFilter.toLowerCase();
-
-          if (matchesFilter) {
-            m.element.style.display = '';
-            bounds.extend([m.location.lng, m.location.lat]);
-            visibleCount++;
-          } else {
-            m.element.style.display = 'none';
-            m.marker.getPopup().remove();
-          }
-        });
-
-        // Fit map to visible markers
-        if (visibleCount > 0) {
-          map.fitBounds(bounds, { padding: 80, pitch: 0, duration: 1200 });
-        }
-      }
-
-      function getUserLocation() {
-        const btn = document.getElementById('locate-btn');
-        btn.innerHTML = '<span class="loading-spinner" style="width:18px;height:18px;border-width:2px;"></span> Finding...';
-
-        if ('geolocation' in navigator) {
-          navigator.geolocation.getCurrentPosition(
-            pos => {
-              userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-
-              if (userMarker) userMarker.remove();
-              const el = document.createElement('div');
-              el.className = 'user-marker';
-              userMarker = new mapboxgl.Marker(el).setLngLat([userLocation.lng, userLocation.lat]).addTo(map);
-
-              buildListings(document.getElementById('search-input').value);
-              map.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 11, duration: 1500 });
-
-              btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v4m0 12v4M2 12h4m12 0h4"></path></svg> Find Me! 📍';
-            },
-            err => {
-              alert('Could not get your location. Please check permissions.');
-              btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v4m0 12v4M2 12h4m12 0h4"></path></svg> Find Me! 📍';
-            }
-          );
-        }
-      }
-
-      // Mobile popup functions
-      function isMobile() {
-        return window.innerWidth <= 480;
-      }
-
-      let touchStartY = 0;
-      let touchCurrentY = 0;
-      let isDragging = false;
-
-      function showMobilePopup(loc) {
-        const overlay = document.getElementById('mobile-overlay');
-        const popup = document.getElementById('mobile-popup');
-
-        // Set content
-        const imgUrl = `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/pin-l-ice-cream+FF6B9D(${loc.lng},${loc.lat})/${loc.lng},${loc.lat},17,0/400x150@2x?access_token=${mapboxgl.accessToken}`;
-        document.getElementById('mobile-image').src = imgUrl;
-        document.getElementById('mobile-title').textContent = '🍦 ' + loc.name;
-        document.getElementById('mobile-address').textContent = loc.address + ' • ' + loc.market;
-        document.getElementById('mobile-size').textContent = loc.size.toLocaleString() + ' SF';
-        document.getElementById('mobile-rent').textContent = loc.rent ? '$' + loc.rent + '/SF' : 'Call';
-        document.getElementById('mobile-nnns').textContent = loc.nnns || 'TBD';
-        document.getElementById('mobile-monthly').textContent = loc.monthlyRent ? '$' + loc.monthlyRent.toLocaleString() + '/mo' : 'TBD';
-        document.getElementById('mobile-anchor').innerHTML = '<strong>🏪 Co-tenants:</strong> ' + loc.anchor;
-        document.getElementById('mobile-directions').href = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`;
-
-        // Reset any transform from dragging
-        popup.style.transform = '';
-
-        // Show with animation
-        overlay.style.display = 'block';
-        popup.style.display = 'block';
-
-        // Trigger reflow for animation
-        void popup.offsetWidth;
-
-        overlay.classList.add('visible');
-        popup.classList.add('visible');
-      }
-
-      function hideMobilePopup() {
-        const overlay = document.getElementById('mobile-overlay');
-        const popup = document.getElementById('mobile-popup');
-
-        overlay.classList.remove('visible');
-        popup.classList.remove('visible');
-
-        setTimeout(() => {
-          overlay.style.display = 'none';
-          popup.style.display = 'none';
-          popup.style.transform = '';
-        }, 250);
-      }
-
-      function setupSwipeToClose() {
-        const popup = document.getElementById('mobile-popup');
-        const handle = popup.querySelector('.mobile-popup-handle');
-
-        // Touch start
-        popup.addEventListener('touchstart', (e) => {
-          // Only start drag from the handle area or top part of popup
-          const touch = e.touches[0];
-          const rect = popup.getBoundingClientRect();
-          const touchY = touch.clientY - rect.top;
-
-          // Allow drag from top 60px of popup (handle area)
-          if (touchY <= 60) {
-            touchStartY = touch.clientY;
-            isDragging = true;
-            popup.style.transition = 'none';
-          }
-        }, { passive: true });
-
-        // Touch move
-        popup.addEventListener('touchmove', (e) => {
-          if (!isDragging) return;
-
-          touchCurrentY = e.touches[0].clientY;
-          const deltaY = touchCurrentY - touchStartY;
-
-          // Only allow dragging down (positive deltaY)
-          if (deltaY > 0) {
-            popup.style.transform = `translateY(${deltaY}px)`;
-          }
-        }, { passive: true });
-
-        // Touch end
-        popup.addEventListener('touchend', (e) => {
-          if (!isDragging) return;
-
-          isDragging = false;
-          popup.style.transition = 'transform 0.2s ease-out';
-
-          const deltaY = touchCurrentY - touchStartY;
-
-          // If dragged more than 60px down, close it
-          if (deltaY > 60) {
-            hideMobilePopup();
-          } else {
-            // Snap back
-            popup.style.transform = 'translateY(0)';
-          }
-
-          touchStartY = 0;
-          touchCurrentY = 0;
-        }, { passive: true });
-      }
-
-      function setupEventListeners() {
-        document.getElementById('search-input').addEventListener('input', e => buildListings(e.target.value));
-        document.getElementById('locate-btn').addEventListener('click', getUserLocation);
-
-        // Mobile popup close handlers
-        document.getElementById('mobile-close').addEventListener('click', hideMobilePopup);
-        document.getElementById('mobile-overlay').addEventListener('click', hideMobilePopup);
-
-        // Setup swipe to close
-        setupSwipeToClose();
-
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilter = btn.dataset.filter;
-            buildListings(document.getElementById('search-input').value);
-            filterMarkers();
-          });
-        });
-
-        document.querySelectorAll('.style-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const style = btn.dataset.style;
-            currentStyle = style;
-
-            // Update style label
-            document.getElementById('style-label').textContent = styleLabels[style];
-
-            map.setStyle(mapStyles[style]);
-            map.once('style.load', () => {
-              // Add terrain only for outdoors style
-              if (style === 'outdoors') {
-                addTerrain();
-              } else {
-                removeTerrain();
-              }
-
-              markers = [];
-              addMarkers();
-            });
-          });
-        });
-
-        document.getElementById('reset-btn').addEventListener('click', () => {
-          activeId = null;
-          markers.forEach(m => {
-            m.element.classList.remove('active');
-            m.marker.getPopup().remove();
-          });
-          document.querySelectorAll('.listing').forEach(el => el.classList.remove('active'));
-          hideMobilePopup();
-          fitBounds();
-        });
-      }
-    </script>
-  </body>
+    }
+  }
+
+  map = new mapboxgl.Map({
+    container: "map",
+    style: mapStyleUrls.satellite,
+    center: [-76.71, 39.01],
+    zoom: 10.5,
+    pitch: 30
+  });
+
+  map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
+
+  wireStyleSwitcher();
+
+  map.on("style.load", function () {
+    addAllMarkers();
+  });
+
+  map.on("load", function () {
+    addAllMarkers();
+    buildSidebar();
+    setActiveCardByIndex(0);
+  });
+
+})();
+</script>
+
+</body>
 </html>
