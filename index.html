@@ -1,101 +1,817 @@
 <!doctype html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <title>Southern Blues Restaurant - Site Survey Map</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="description" content="Southern Blues Restaurant site survey - 7 available locations in Maryland">
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --navy:#1B3A5C; --green:#2E7D32; --orange:#E65100; --purple:#5e35b1; --white:#fff;
+:root {
+  --navy: #1B3A5C;
+  --navy-dark: #0d2240;
+  --green: #2E7D32;
+  --orange: #E65100;
+  --purple: #5e35b1;
+  --white: #fff;
+  --bg-secondary: #f8fafc;
+  --text-primary: #1a1a1a;
+  --text-secondary: #555;
+  --text-muted: #888;
+  --border-color: #e5e5e5;
+  --shadow-sm: 0 2px 8px rgba(27, 58, 92, 0.1);
+  --shadow-md: 0 4px 16px rgba(27, 58, 92, 0.15);
+  --shadow-lg: 0 8px 32px rgba(27, 58, 92, 0.2);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:'Inter',system-ui,sans-serif}
-.app{display:flex;height:100%;overflow:hidden}
-.sidebar{
-  width:380px;height:100%;background:var(--white);
-  display:flex;flex-direction:column;border-right:1px solid #e5e5e5;z-index:10
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif; }
+
+.app { display: flex; height: 100%; overflow: hidden; }
+
+.sidebar {
+  width: 400px;
+  height: 100%;
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  z-index: 10;
+  box-shadow: var(--shadow-lg);
 }
-.sidebar-header{
-  padding:20px 24px;background:linear-gradient(135deg,var(--navy) 0%,#0d2240 100%);color:#fff
+
+.sidebar-header {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
 }
-.sidebar-header h1{font-size:18px;font-weight:700;margin-bottom:4px}
-.sidebar-header p{font-size:12px;opacity:.8}
-.legend{padding:12px 24px;border-bottom:1px solid #eee;display:flex;gap:16px;flex-wrap:wrap}
-.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#666}
-.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.property-list{flex:1;overflow-y:auto}
-.property-card{
-  padding:16px 24px;border-bottom:1px solid #f0f0f0;cursor:pointer;
-  transition:background .15s;border-left:3px solid transparent
+
+.sidebar-header::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -30%;
+  width: 200px;
+  height: 200px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+  pointer-events: none;
 }
-.property-card:hover{background:#f5f8fc}
-.property-card.active{background:#eef3fa;border-left-color:var(--navy)}
-.card-rank{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:24px;height:24px;border-radius:50%;
-  background:var(--navy);color:#fff;font-size:12px;font-weight:700;
-  margin-right:8px;flex-shrink:0;vertical-align:middle
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+  position: relative;
+  z-index: 1;
 }
-.card-rank.rank-top{background:var(--green)}
-.card-rank.rank-conditional{background:var(--orange)}
-.card-rank.rank-premium{background:var(--purple)}
-.card-header{display:flex;align-items:center}
-.card-name{font-weight:600;font-size:14px;color:#1a1a1a}
-.card-location{font-size:12px;color:#888;margin-top:2px;margin-left:32px}
-.card-details{display:flex;gap:12px;margin-top:8px;margin-left:32px;flex-wrap:wrap}
-.card-detail{font-size:11px;color:#555}
-.card-detail strong{color:#1a1a1a}
-.card-badge{
-  display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;
-  margin-top:6px;margin-left:32px
+
+.logo-icon {
+  width: 44px;
+  height: 44px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  backdrop-filter: blur(4px);
 }
-.badge-top{background:#e8f5e9;color:var(--green)}
-.badge-strong{background:#e8f5e9;color:var(--green)}
-.badge-solid{background:#e3f2fd;color:var(--navy)}
-.badge-conditional{background:#fff3e0;color:var(--orange)}
-.badge-premium{background:#ede7f6;color:var(--purple)}
-.map-wrap{position:relative;flex:1;height:100%}
-#map{width:100%;height:100%}
-.mapboxgl-popup{max-width:320px !important}
-.mapboxgl-popup-content{
-  padding:0 !important;border-radius:12px !important;overflow:hidden;
-  box-shadow:0 8px 30px rgba(0,0,0,.18) !important;font-family:'Inter',sans-serif !important
+
+.logo h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.3px; }
+
+.subtitle {
+  font-size: 12px;
+  opacity: 0.85;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
 }
-.mapboxgl-popup-close-button{font-size:18px;padding:4px 8px;color:#999}
-.popup-header{padding:14px 16px 10px;border-bottom:1px solid #f0f0f0}
-.popup-name{font-weight:700;font-size:15px;color:var(--navy)}
-.popup-address{font-size:11px;color:#999;margin-top:2px}
-.popup-body{padding:10px 16px 14px}
-.popup-row{
-  display:flex;justify-content:space-between;align-items:flex-start;
-  font-size:12px;padding:5px 0;border-bottom:1px solid #f8f8f8
+
+.location-count {
+  background: rgba(255,255,255,0.2);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
 }
-.popup-row:last-child{border-bottom:none}
-.popup-label{color:#999;flex-shrink:0;margin-right:12px}
-.popup-value{font-weight:600;color:#333;text-align:right}
-.popup-exclusive{
-  margin-top:8px;padding:8px 10px;border-radius:8px;background:#fff3e0;
-  font-size:11px;color:#bf360c;line-height:1.4
+
+.controls {
+  padding: 14px 20px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
 }
-.popup-badge-wrap{text-align:center;padding:8px 16px 12px}
-.style-switcher{
-  position:absolute;top:12px;right:12px;z-index:5;display:flex;border-radius:8px;overflow:hidden;
-  box-shadow:0 2px 8px rgba(0,0,0,.15)
+
+.search-container {
+  position: relative;
+  margin-bottom: 12px;
 }
-.style-btn{
-  padding:8px 14px;font-size:12px;font-family:'Inter',sans-serif;border:none;cursor:pointer;
-  background:#fff;color:#555;font-weight:500;transition:all .15s;border-right:1px solid #eee
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--navy);
+  opacity: 0.5;
 }
-.style-btn:last-child{border-right:none}
-.style-btn.active{background:var(--navy);color:#fff}
-.style-btn:hover:not(.active){background:#f0f0f0}
-@media (max-width:768px){
-  .app{flex-direction:column}
-  .sidebar{width:100%;height:45%;order:2}
-  .map-wrap{height:55%;order:1}
+
+.search-input {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--white);
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(27, 58, 92, 0.1);
+}
+
+.search-input::placeholder { color: var(--text-muted); }
+
+.controls-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.locate-btn {
+  padding: 10px 16px;
+  background: var(--navy);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.locate-btn:hover {
+  background: var(--navy-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.legend {
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: var(--white);
+}
+
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #666; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+.listings-container { flex: 1; overflow-y: auto; }
+
+.listings-header {
+  padding: 12px 20px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.property-card {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-left: 3px solid transparent;
+}
+
+.property-card:hover { background: #f5f8fc; transform: translateX(2px); }
+.property-card.active { background: #eef3fa; border-left-color: var(--navy); }
+
+.card-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 10px;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.card-rank.rank-top { background: var(--green); }
+.card-rank.rank-conditional { background: var(--orange); }
+.card-rank.rank-premium { background: var(--purple); }
+
+.card-header { display: flex; align-items: center; }
+.card-name { font-weight: 600; font-size: 14px; color: var(--text-primary); }
+.card-location { font-size: 12px; color: var(--text-muted); margin-top: 2px; margin-left: 36px; }
+
+.card-details {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+  margin-left: 36px;
+}
+
+.card-detail {
+  font-size: 11px;
+  background: var(--bg-secondary);
+  padding: 6px 8px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.card-detail-label { color: var(--text-muted); display: block; font-size: 9px; text-transform: uppercase; letter-spacing: 0.3px; }
+.card-detail-value { color: var(--text-primary); font-weight: 700; font-size: 12px; }
+
+.card-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 6px;
+  margin-left: 36px;
+}
+
+.badge-top { background: #e8f5e9; color: var(--green); }
+.badge-strong { background: #e8f5e9; color: var(--green); }
+.badge-solid { background: #e3f2fd; color: var(--navy); }
+.badge-conditional { background: #fff3e0; color: var(--orange); }
+.badge-premium { background: #ede7f6; color: var(--purple); }
+
+.card-distance {
+  font-size: 11px;
+  color: var(--purple);
+  font-weight: 600;
+  margin-left: 36px;
+  margin-top: 4px;
+}
+
+.empty-state {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+
+.map-wrap { position: relative; flex: 1; height: 100%; min-height: 400px; }
+
+#map {
+  position: absolute;
+  top: 0; bottom: 0; left: 0; right: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mapboxgl-popup { max-width: 340px !important; }
+
+.mapboxgl-popup-content {
+  padding: 0 !important;
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+.mapboxgl-popup-close-button {
+  font-size: 22px;
+  padding: 6px 10px;
+  color: white;
+  right: 4px;
+  top: 4px;
+  z-index: 10;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.popup-image {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+}
+
+.popup-header { padding: 14px 16px 10px; }
+.popup-name { font-weight: 700; font-size: 15px; color: var(--navy); }
+.popup-address { font-size: 11px; color: #999; margin-top: 2px; }
+
+.popup-body { padding: 10px 16px 14px; }
+
+.popup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 10px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.popup-stat-label { color: var(--text-muted); font-size: 9px; text-transform: uppercase; letter-spacing: 0.3px; }
+.popup-stat-value { color: var(--text-primary); font-weight: 700; font-size: 13px; }
+
+.popup-why {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.popup-why strong { color: var(--text-primary); }
+
+.popup-exclusive {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fff3e0;
+  font-size: 11px;
+  color: #bf360c;
+  line-height: 1.4;
+}
+
+.popup-actions { display: flex; gap: 8px; margin-bottom: 4px; }
+
+.popup-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: white;
+}
+
+.popup-btn-directions {
+  background: var(--navy);
+}
+
+.popup-btn-directions:hover {
+  background: var(--navy-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.popup-badge-wrap { text-align: center; padding: 4px 16px 12px; }
+
+.style-switcher {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 2px solid var(--navy);
+}
+
+.style-btn {
+  padding: 10px 16px;
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  border: none;
+  cursor: pointer;
+  background: #fff;
+  color: #555;
+  font-weight: 600;
+  transition: all 0.2s;
+  border-right: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.style-btn:last-child { border-right: none; }
+.style-btn.active { background: var(--navy); color: #fff; }
+.style-btn:hover:not(.active) { background: #f0f4f8; }
+.style-btn .style-emoji { font-size: 14px; }
+
+.style-label {
+  position: absolute;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--navy);
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--navy);
+  z-index: 1;
+  white-space: nowrap;
+  transition: opacity 0.3s;
+}
+
+.reset-btn {
+  position: absolute;
+  bottom: 100px;
+  right: 16px;
+  z-index: 5;
+  background: var(--white);
+  border: 2px solid var(--navy);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reset-btn:hover {
+  background: var(--navy);
+  transform: scale(1.1);
+}
+
+.reset-btn:hover svg { stroke: white; }
+
+.marker {
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.marker:hover { transform: scale(1.2); }
+.marker.active { transform: scale(1.3); z-index: 100 !important; }
+
+.marker-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  animation: markerPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes markerPulse {
+  0%, 100% { box-shadow: 0 3px 10px rgba(0,0,0,0.3); }
+  50% { box-shadow: 0 3px 18px rgba(0,0,0,0.5); }
+}
+
+.user-marker {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #2196F3, #1B3A5C);
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px rgba(33, 150, 243, 0.25), var(--shadow-md);
+  animation: userPulse 2s ease-in-out infinite;
+}
+
+@keyframes userPulse {
+  0%, 100% { box-shadow: 0 0 0 6px rgba(33, 150, 243, 0.25), var(--shadow-md); }
+  50% { box-shadow: 0 0 0 14px rgba(33, 150, 243, 0.1), var(--shadow-md); }
+}
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: opacity 0.5s;
+}
+
+.loading-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255,255,255,0.2);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-text {
+  margin-top: 16px;
+  font-size: 16px;
+  color: white;
+  font-weight: 600;
+}
+
+.loading-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ——— Responsive ——— */
+
+@media (max-width: 900px) {
+  .app {
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+  }
+  .sidebar {
+    width: 100%;
+    height: 55%;
+    min-height: 300px;
+    border-right: none;
+    border-top: 2px solid var(--navy);
+    order: 2;
+    display: flex;
+    flex-direction: column;
+  }
+  .map-wrap {
+    height: 45%;
+    min-height: 200px;
+    order: 1;
+  }
+  .sidebar-header { padding: 12px 16px; flex-shrink: 0; }
+  .logo h1 { font-size: 16px; }
+  .logo-icon { width: 36px; height: 36px; font-size: 18px; }
+  .controls { flex-shrink: 0; padding: 10px 16px; }
+  .legend { padding: 8px 16px; }
+  .listings-container {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .style-switcher { top: 10px; }
+  .style-btn { padding: 8px 12px; font-size: 11px; }
+  .style-label { top: 56px; font-size: 10px; padding: 5px 10px; }
+}
+
+@media (max-width: 480px) {
+  .app {
+    height: 100vh;
+    height: 100dvh;
+  }
+  .sidebar {
+    height: 60%;
+    min-height: 320px;
+  }
+  .map-wrap {
+    height: 40%;
+    min-height: 180px;
+  }
+  .sidebar-header { padding: 10px 14px; }
+  .sidebar-header::before { display: none; }
+  .logo-icon { width: 32px; height: 32px; font-size: 16px; }
+  .logo h1 { font-size: 15px; }
+  .subtitle { font-size: 11px; }
+  .controls { padding: 8px 12px; }
+  .search-input { padding: 10px 12px 10px 38px; font-size: 13px; }
+  .search-icon { left: 12px; }
+  .locate-btn { padding: 8px 12px; font-size: 11px; }
+  .legend { padding: 6px 12px; gap: 10px; }
+  .legend-item { font-size: 10px; }
+  .property-card { padding: 12px 14px; }
+  .card-name { font-size: 13px; }
+  .card-location { font-size: 11px; }
+  .card-details { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .card-detail { font-size: 10px; padding: 4px 6px; }
+  .marker-circle { width: 32px; height: 32px; font-size: 12px; }
+  .style-switcher {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    transform: none;
+    justify-content: space-around;
+  }
+  .style-btn { padding: 6px 8px; font-size: 10px; flex: 1; justify-content: center; }
+  .style-btn .style-emoji { font-size: 12px; }
+  .style-label { display: none; }
+  .reset-btn { bottom: 60px; right: 8px; width: 42px; height: 42px; }
+
+  /* Hide desktop popup on mobile */
+  .mapboxgl-popup { display: none !important; }
+}
+
+/* ——— Mobile Bottom Sheet ——— */
+
+.mobile-popup-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 2000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mobile-popup-overlay.visible { opacity: 1; }
+
+.mobile-popup {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  z-index: 2001;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  max-height: 85vh;
+  overflow: hidden;
+  box-shadow: 0 -8px 32px rgba(27, 58, 92, 0.25);
+}
+
+.mobile-popup.visible { transform: translateY(0); }
+
+.mobile-popup-handle {
+  width: 40px;
+  height: 5px;
+  background: #ddd;
+  border-radius: 3px;
+  margin: 12px auto 8px;
+}
+
+.mobile-popup-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(27, 58, 92, 0.1);
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy);
+  z-index: 10;
+}
+
+.mobile-popup-image {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+}
+
+.mobile-popup-body {
+  padding: 16px 20px 24px;
+  overflow-y: auto;
+  max-height: calc(85vh - 150px);
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-popup-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+
+.mobile-popup-address {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.mobile-popup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.mobile-popup-stat {
+  background: var(--bg-secondary);
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.mobile-popup-stat-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.mobile-popup-stat-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.mobile-popup-why {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.mobile-popup-exclusive {
+  padding: 10px;
+  background: #fff3e0;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #bf360c;
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+
+.mobile-popup-badge-wrap {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.mobile-popup-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  background: var(--navy);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+.mobile-popup-btn:hover { background: var(--navy-dark); }
+
+@media (min-width: 481px) {
+  .mobile-popup-overlay,
+  .mobile-popup {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-popup-overlay,
+  .mobile-popup {
+    display: block;
+  }
+}
+
+@supports (padding: max(0px)) {
+  @media (max-width: 480px) {
+    .sidebar {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
 }
 </style>
 </head>
@@ -103,30 +819,113 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif}
 <div class="app">
   <div class="sidebar">
     <div class="sidebar-header">
-      <h1>Southern Blues Restaurant</h1>
-      <p>Site Survey - 7 Available Locations | Prepared by Renaud Consulting</p>
+      <div class="logo">
+        <div class="logo-icon">&#x1F3B5;</div>
+        <h1>Southern Blues Restaurant</h1>
+      </div>
+      <div class="subtitle">
+        Site Survey &bull; Prepared by Renaud Consulting
+        <span class="location-count" id="location-count">7 locations</span>
+      </div>
     </div>
+
+    <div class="controls">
+      <div class="search-container">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search locations...">
+      </div>
+      <div class="controls-row">
+        <button class="locate-btn" id="locate-btn" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 2v4m0 12v4M2 12h4m12 0h4"></path>
+          </svg>
+          Find Me
+        </button>
+      </div>
+    </div>
+
     <div class="legend">
       <div class="legend-item"><div class="legend-dot" style="background:#2E7D32"></div> Top Pick</div>
       <div class="legend-item"><div class="legend-dot" style="background:#1B3A5C"></div> Strong / Solid</div>
       <div class="legend-item"><div class="legend-dot" style="background:#E65100"></div> Conditional</div>
       <div class="legend-item"><div class="legend-dot" style="background:#5e35b1"></div> Premium</div>
     </div>
-    <div class="property-list" id="propertyList"></div>
+
+    <div class="listings-container">
+      <div class="listings-header" id="listings-header">7 Available Locations</div>
+      <div id="propertyList"></div>
+    </div>
   </div>
 
   <div class="map-wrap">
     <div id="map"></div>
+
     <div class="style-switcher" id="styleSwitcher" aria-label="Map style switcher">
-      <button class="style-btn" data-style="kepler" type="button">Kepler</button>
-      <button class="style-btn active" data-style="satellite" type="button">Satellite</button>
-      <button class="style-btn" data-style="streets" type="button">Streets</button>
-      <button class="style-btn" data-style="dark" type="button">Dark</button>
+      <button class="style-btn" data-style="kepler" type="button"><span class="style-emoji">&#x1F319;</span> Kepler</button>
+      <button class="style-btn active" data-style="satellite" type="button"><span class="style-emoji">&#x1F6F0;</span> Satellite</button>
+      <button class="style-btn" data-style="streets" type="button"><span class="style-emoji">&#x1F5FA;</span> Streets</button>
+      <button class="style-btn" data-style="dark" type="button"><span class="style-emoji">&#x1F303;</span> Dark</button>
+    </div>
+
+    <div class="style-label" id="style-label">&#x1F6F0; Satellite - Real Imagery View</div>
+
+    <button class="reset-btn" id="reset-btn" title="Reset view" type="button">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B3A5C" stroke-width="2.5">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+        <path d="M3 3v5h5"></path>
+      </svg>
+    </button>
+
+    <div class="loading-overlay" id="loading">
+      <div class="loading-icon">&#x1F3B5;</div>
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading survey map...</div>
     </div>
   </div>
 </div>
 
+<!-- Mobile Bottom Sheet Popup -->
+<div class="mobile-popup-overlay" id="mobile-overlay"></div>
+<div class="mobile-popup" id="mobile-popup">
+  <div class="mobile-popup-handle"></div>
+  <button class="mobile-popup-close" id="mobile-close" type="button">&#x2715;</button>
+  <img class="mobile-popup-image" id="mobile-image" src="" alt="">
+  <div class="mobile-popup-body">
+    <div class="mobile-popup-title" id="mobile-title"></div>
+    <div class="mobile-popup-address" id="mobile-address"></div>
+    <div class="mobile-popup-grid">
+      <div class="mobile-popup-stat">
+        <div class="mobile-popup-stat-label">Available</div>
+        <div class="mobile-popup-stat-value" id="mobile-sf"></div>
+      </div>
+      <div class="mobile-popup-stat">
+        <div class="mobile-popup-stat-label">Rent</div>
+        <div class="mobile-popup-stat-value" id="mobile-rent"></div>
+      </div>
+      <div class="mobile-popup-stat">
+        <div class="mobile-popup-stat-label">Est. Monthly</div>
+        <div class="mobile-popup-stat-value" id="mobile-monthly"></div>
+      </div>
+      <div class="mobile-popup-stat">
+        <div class="mobile-popup-stat-label">Rating</div>
+        <div class="mobile-popup-stat-value" id="mobile-rating"></div>
+      </div>
+    </div>
+    <div class="mobile-popup-why" id="mobile-why"></div>
+    <div class="mobile-popup-exclusive" id="mobile-exclusive" style="display:none"></div>
+    <div class="mobile-popup-badge-wrap" id="mobile-badge-wrap"></div>
+    <a class="mobile-popup-btn" id="mobile-directions" href="#" target="_blank">
+      &#x1F9ED; Get Directions
+    </a>
+  </div>
+</div>
+
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 
 <script>
 (function () {
@@ -175,27 +974,16 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif}
     dark: "mapbox://styles/mapbox/dark-v11"
   };
 
-  var map, markers = [], activeCard = null, openPopup = null;
+  var styleLabels = {
+    kepler: "\uD83C\uDF19 Kepler - Night Navigation",
+    satellite: "\uD83D\uDEF0 Satellite - Real Imagery View",
+    streets: "\uD83D\uDDFA Streets - Clean Detail",
+    dark: "\uD83C\uDF03 Dark - Sleek & Modern"
+  };
 
-  function buildPopupHTML(p) {
-    var exc = p.exclusive
-      ? '<div class="popup-exclusive">\u26A0\uFE0F ' + escapeHTML(p.exclusive) + '</div>'
-      : "";
-
-    return '' +
-      '<div class="popup-header">' +
-        '<div class="popup-name">' + p.rank + '. ' + escapeHTML(p.name) + '</div>' +
-        '<div class="popup-address">' + escapeHTML(p.address) + '</div>' +
-      '</div>' +
-      '<div class="popup-body">' +
-        '<div class="popup-row"><span class="popup-label">Available</span><span class="popup-value">' + escapeHTML(p.sf) + '</span></div>' +
-        '<div class="popup-row"><span class="popup-label">Rent</span><span class="popup-value">' + escapeHTML(p.rent) + '</span></div>' +
-        '<div class="popup-row"><span class="popup-label">Est. Monthly</span><span class="popup-value">' + escapeHTML(p.monthly) + '</span></div>' +
-        '<div class="popup-row"><span class="popup-label">Why</span><span class="popup-value" style="max-width:160px;font-size:11px">' + escapeHTML(p.why) + '</span></div>' +
-        exc +
-      '</div>' +
-      '<div class="popup-badge-wrap"><span class="card-badge ' + p.badgeClass + '">' + escapeHTML(p.rating) + '</span></div>';
-  }
+  var map, markers = [], activeId = null, openPopup = null;
+  var userLocation = null, userMarker = null;
+  var currentStyle = "satellite";
 
   function escapeHTML(str) {
     return String(str == null ? "" : str)
@@ -206,8 +994,43 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif}
       .replace(/'/g, "&#039;");
   }
 
+  function isMobile() {
+    return window.innerWidth <= 480;
+  }
+
+  function buildPopupHTML(p) {
+    var imgUrl = "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/pin-l+"+
+      p.color.replace("#","")+"("+p.lng+","+p.lat+")/"+p.lng+","+p.lat+",16,0/400x130@2x?access_token="+mapboxgl.accessToken;
+    var dirUrl = "https://www.google.com/maps/dir/?api=1&destination="+p.lat+","+p.lng;
+
+    var exc = p.exclusive
+      ? '<div class="popup-exclusive">\u26A0\uFE0F ' + escapeHTML(p.exclusive) + '</div>'
+      : "";
+
+    return '' +
+      '<img class="popup-image" src="' + imgUrl + '" alt="' + escapeHTML(p.name) + '">' +
+      '<div class="popup-header">' +
+        '<div class="popup-name">' + p.rank + '. ' + escapeHTML(p.name) + '</div>' +
+        '<div class="popup-address">' + escapeHTML(p.address) + '</div>' +
+      '</div>' +
+      '<div class="popup-body">' +
+        '<div class="popup-grid">' +
+          '<div><span class="popup-stat-label">Available</span><div class="popup-stat-value">' + escapeHTML(p.sf) + '</div></div>' +
+          '<div><span class="popup-stat-label">Rent</span><div class="popup-stat-value">' + escapeHTML(p.rent) + '</div></div>' +
+          '<div><span class="popup-stat-label">Est. Monthly</span><div class="popup-stat-value">' + escapeHTML(p.monthly) + '</div></div>' +
+          '<div><span class="popup-stat-label">Rating</span><div class="popup-stat-value">' + escapeHTML(p.rating) + '</div></div>' +
+        '</div>' +
+        '<div class="popup-why"><strong>Why:</strong> ' + escapeHTML(p.why) + '</div>' +
+        exc +
+        '<div class="popup-actions">' +
+          '<a class="popup-btn popup-btn-directions" href="' + dirUrl + '" target="_blank">\uD83E\uDDED Get Directions</a>' +
+        '</div>' +
+      '</div>' +
+      '<div class="popup-badge-wrap"><span class="card-badge ' + p.badgeClass + '">' + escapeHTML(p.rating) + '</span></div>';
+  }
+
   function clearMarkers() {
-    for (var i = 0; i < markers.length; i++) markers[i].remove();
+    for (var i = 0; i < markers.length; i++) markers[i].marker.remove();
     markers = [];
   }
 
@@ -227,14 +1050,16 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif}
         var p = properties[idx];
 
         var el = document.createElement("div");
-        el.style.cssText =
-          "width:34px;height:34px;border-radius:50%;background:" + p.color +
-          ";border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;" +
-          "display:flex;align-items:center;justify-content:center;color:white;font-weight:700;" +
-          "font-size:14px;font-family:Inter,sans-serif;";
-        el.textContent = String(p.rank);
+        el.className = "marker";
+        el.dataset.id = String(p.rank);
 
-        var popup = new mapboxgl.Popup({ offset: 20, maxWidth: "320px", closeButton: true })
+        var circle = document.createElement("div");
+        circle.className = "marker-circle";
+        circle.style.background = p.color;
+        circle.textContent = String(p.rank);
+        el.appendChild(circle);
+
+        var popup = new mapboxgl.Popup({ offset: 25, maxWidth: "340px", closeButton: true })
           .setHTML(buildPopupHTML(p));
 
         popup.on("open", function () { openPopup = popup; });
@@ -246,49 +1071,115 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif}
           .addTo(map);
 
         el.addEventListener("click", function () {
-          setActiveCardByIndex(idx);
+          setActive(p.rank);
+          if (isMobile()) {
+            showMobilePopup(p);
+          }
         });
 
-        markers.push(marker);
+        markers.push({ marker: marker, property: p, element: el });
       })(j);
     }
   }
 
-  function setActiveCardByIndex(idx) {
-    var list = document.getElementById("propertyList");
-    var cards = list.querySelectorAll(".property-card");
-    if (activeCard) activeCard.classList.remove("active");
-    if (cards[idx]) {
-      cards[idx].classList.add("active");
-      activeCard = cards[idx];
-      cards[idx].scrollIntoView({ block: "nearest", behavior: "smooth" });
+  function setActive(rank) {
+    activeId = rank;
+    for (var i = 0; i < markers.length; i++) {
+      var isActive = markers[i].property.rank === rank;
+      if (isActive) markers[i].element.classList.add("active");
+      else markers[i].element.classList.remove("active");
+    }
+    var cards = document.querySelectorAll(".property-card");
+    for (var c = 0; c < cards.length; c++) {
+      var cardRank = parseInt(cards[c].dataset.rank, 10);
+      if (cardRank === rank) {
+        cards[c].classList.add("active");
+        cards[c].scrollIntoView({ behavior: "smooth", block: "nearest" });
+      } else {
+        cards[c].classList.remove("active");
+      }
     }
   }
 
-  function flyToAndOpen(idx) {
-    var p = properties[idx];
+  function flyToProperty(p) {
     closeOpenPopup();
-
-    map.flyTo({ center: [p.lng, p.lat], zoom: 14, pitch: 45, duration: 1200 });
-
-    map.once("moveend", function () {
-      markers[idx].togglePopup();
-      openPopup = markers[idx].getPopup();
+    map.flyTo({
+      center: [p.lng, p.lat],
+      zoom: 15,
+      pitch: 50,
+      bearing: Math.random() * 40 - 20,
+      duration: 1500,
+      essential: true
     });
   }
 
-  function buildSidebar() {
+  function openMarkerPopup(rank) {
+    for (var i = 0; i < markers.length; i++) {
+      if (markers[i].property.rank === rank) {
+        markers[i].marker.togglePopup();
+      } else {
+        markers[i].marker.getPopup().remove();
+      }
+    }
+  }
+
+  function fitBounds() {
+    if (properties.length === 0) return;
+    var bounds = new mapboxgl.LngLatBounds();
+    for (var i = 0; i < properties.length; i++) {
+      bounds.extend([properties[i].lng, properties[i].lat]);
+    }
+    map.fitBounds(bounds, { padding: 70, pitch: 35, duration: 1200 });
+  }
+
+  function buildSidebar(filter) {
+    filter = (filter || "").toLowerCase();
     var list = document.getElementById("propertyList");
+    var header = document.getElementById("listings-header");
     list.innerHTML = "";
 
+    var filtered = [];
     for (var i = 0; i < properties.length; i++) {
-      (function (idx) {
-        var p = properties[idx];
+      var p = properties[i];
+      var matchesSearch = p.name.toLowerCase().indexOf(filter) !== -1 ||
+        p.address.toLowerCase().indexOf(filter) !== -1 ||
+        p.rating.toLowerCase().indexOf(filter) !== -1 ||
+        p.why.toLowerCase().indexOf(filter) !== -1;
+      if (matchesSearch) filtered.push(p);
+    }
 
+    // Sort by distance if user location is available
+    if (userLocation && typeof turf !== "undefined") {
+      for (var d = 0; d < filtered.length; d++) {
+        filtered[d]._distance = turf.distance(
+          turf.point([userLocation.lng, userLocation.lat]),
+          turf.point([filtered[d].lng, filtered[d].lat]),
+          { units: "miles" }
+        );
+      }
+      filtered.sort(function(a, b) { return a._distance - b._distance; });
+    }
+
+    header.textContent = filtered.length + " Available Location" + (filtered.length !== 1 ? "s" : "");
+    document.getElementById("location-count").textContent = properties.length + " locations";
+
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x1F50D;</div><div>No matching locations found</div></div>';
+      return;
+    }
+
+    for (var k = 0; k < filtered.length; k++) {
+      (function (idx) {
+        var p = filtered[idx];
         var card = document.createElement("div");
-        card.className = "property-card";
+        card.className = "property-card" + (activeId === p.rank ? " active" : "");
+        card.dataset.rank = String(p.rank);
 
         var rc = p.rankClass ? " " + p.rankClass : "";
+        var distHtml = p._distance !== undefined
+          ? '<div class="card-distance">\uD83D\uDCCD ' + p._distance.toFixed(1) + ' mi away</div>'
+          : "";
+
         card.innerHTML =
           '<div class="card-header">' +
             '<span class="card-rank' + rc + '">' + p.rank + '</span>' +
@@ -296,21 +1187,119 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif}
           '</div>' +
           '<div class="card-location">' + escapeHTML(p.address) + '</div>' +
           '<div class="card-details">' +
-            '<div class="card-detail"><strong>' + escapeHTML(p.sf) + '</strong></div>' +
-            '<div class="card-detail"><strong>' + escapeHTML(p.rent) + '</strong></div>' +
-            '<div class="card-detail"><strong>' + escapeHTML(p.monthly) + '</strong></div>' +
+            '<div class="card-detail"><span class="card-detail-label">Available</span><span class="card-detail-value">' + escapeHTML(p.sf) + '</span></div>' +
+            '<div class="card-detail"><span class="card-detail-label">Rent</span><span class="card-detail-value">' + escapeHTML(p.rent) + '</span></div>' +
+            '<div class="card-detail"><span class="card-detail-label">Monthly</span><span class="card-detail-value">' + escapeHTML(p.monthly) + '</span></div>' +
           '</div>' +
+          distHtml +
           '<div><span class="card-badge ' + p.badgeClass + '">' + escapeHTML(p.rating) + '</span></div>';
 
         card.addEventListener("click", function () {
-          setActiveCardByIndex(idx);
-          flyToAndOpen(idx);
+          flyToProperty(p);
+          setActive(p.rank);
+          if (isMobile()) {
+            showMobilePopup(p);
+          } else {
+            map.once("moveend", function () {
+              openMarkerPopup(p.rank);
+            });
+          }
         });
 
         list.appendChild(card);
-      })(i);
+      })(k);
     }
   }
+
+  // ——— Mobile Bottom Sheet ———
+
+  function showMobilePopup(p) {
+    var overlay = document.getElementById("mobile-overlay");
+    var popup = document.getElementById("mobile-popup");
+
+    var imgUrl = "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/pin-l+"+
+      p.color.replace("#","")+"("+p.lng+","+p.lat+")/"+p.lng+","+p.lat+",16,0/400x130@2x?access_token="+mapboxgl.accessToken;
+    var dirUrl = "https://www.google.com/maps/dir/?api=1&destination="+p.lat+","+p.lng;
+
+    document.getElementById("mobile-image").src = imgUrl;
+    document.getElementById("mobile-title").textContent = p.rank + ". " + p.name;
+    document.getElementById("mobile-address").textContent = p.address;
+    document.getElementById("mobile-sf").textContent = p.sf;
+    document.getElementById("mobile-rent").textContent = p.rent;
+    document.getElementById("mobile-monthly").textContent = p.monthly;
+    document.getElementById("mobile-rating").textContent = p.rating;
+    document.getElementById("mobile-why").innerHTML = "<strong>Why:</strong> " + escapeHTML(p.why);
+    document.getElementById("mobile-directions").href = dirUrl;
+
+    var excEl = document.getElementById("mobile-exclusive");
+    if (p.exclusive) {
+      excEl.style.display = "";
+      excEl.textContent = "\u26A0\uFE0F " + p.exclusive;
+    } else {
+      excEl.style.display = "none";
+    }
+
+    var badgeWrap = document.getElementById("mobile-badge-wrap");
+    badgeWrap.innerHTML = '<span class="card-badge ' + p.badgeClass + '">' + escapeHTML(p.rating) + '</span>';
+
+    overlay.style.display = "block";
+    popup.style.display = "block";
+    void popup.offsetWidth; // trigger reflow
+    overlay.classList.add("visible");
+    popup.classList.add("visible");
+  }
+
+  function hideMobilePopup() {
+    var overlay = document.getElementById("mobile-overlay");
+    var popup = document.getElementById("mobile-popup");
+    overlay.classList.remove("visible");
+    popup.classList.remove("visible");
+    setTimeout(function () {
+      overlay.style.display = "none";
+      popup.style.display = "none";
+    }, 400);
+  }
+
+  // ——— Geolocation ———
+
+  function getUserLocation() {
+    var btn = document.getElementById("locate-btn");
+    btn.innerHTML = '<span class="loading-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block"></span> Finding...';
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+
+          if (userMarker) userMarker.remove();
+          var el = document.createElement("div");
+          el.className = "user-marker";
+          userMarker = new mapboxgl.Marker(el)
+            .setLngLat([userLocation.lng, userLocation.lat])
+            .addTo(map);
+
+          buildSidebar(document.getElementById("search-input").value);
+          map.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 11, duration: 1500 });
+
+          resetLocateBtn();
+        },
+        function () {
+          alert("Could not get your location. Please check permissions.");
+          resetLocateBtn();
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by your browser.");
+      resetLocateBtn();
+    }
+  }
+
+  function resetLocateBtn() {
+    var btn = document.getElementById("locate-btn");
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v4m0 12v4M2 12h4m12 0h4"></path></svg> Find Me';
+  }
+
+  // ——— Style Switcher ———
 
   function wireStyleSwitcher() {
     var styleBtns = document.querySelectorAll("#styleSwitcher .style-btn");
@@ -321,6 +1310,9 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif}
 
         for (var b = 0; b < styleBtns.length; b++) styleBtns[b].classList.remove("active");
         this.classList.add("active");
+        currentStyle = styleName;
+
+        document.getElementById("style-label").textContent = styleLabels[styleName] || styleName;
 
         closeOpenPopup();
         map.setStyle(mapStyleUrls[styleName]);
@@ -328,26 +1320,68 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif}
     }
   }
 
+  // ——— Init ———
+
   map = new mapboxgl.Map({
     container: "map",
     style: mapStyleUrls.satellite,
     center: [-76.71, 39.01],
     zoom: 10.5,
-    pitch: 30
+    pitch: 35,
+    bearing: -5,
+    antialias: true
   });
 
   map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
 
   wireStyleSwitcher();
 
+  // Search
+  document.getElementById("search-input").addEventListener("input", function (e) {
+    buildSidebar(e.target.value);
+  });
+
+  // Locate
+  document.getElementById("locate-btn").addEventListener("click", getUserLocation);
+
+  // Mobile popup close
+  document.getElementById("mobile-close").addEventListener("click", hideMobilePopup);
+  document.getElementById("mobile-overlay").addEventListener("click", hideMobilePopup);
+
+  // Reset button
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    activeId = null;
+    for (var i = 0; i < markers.length; i++) {
+      markers[i].element.classList.remove("active");
+      markers[i].marker.getPopup().remove();
+    }
+    var cards = document.querySelectorAll(".property-card");
+    for (var c = 0; c < cards.length; c++) cards[c].classList.remove("active");
+    hideMobilePopup();
+    fitBounds();
+  });
+
   map.on("style.load", function () {
     addAllMarkers();
+    if (userMarker && userLocation) {
+      var el = document.createElement("div");
+      el.className = "user-marker";
+      userMarker = new mapboxgl.Marker(el)
+        .setLngLat([userLocation.lng, userLocation.lat])
+        .addTo(map);
+    }
   });
 
   map.on("load", function () {
+    document.getElementById("loading").classList.add("hidden");
+    map.resize();
     addAllMarkers();
     buildSidebar();
-    setActiveCardByIndex(0);
+    fitBounds();
+  });
+
+  map.on("error", function () {
+    document.getElementById("loading").classList.add("hidden");
   });
 
 })();
