@@ -1,0 +1,272 @@
+{
+  "scraped_date": "2026-03-04T23:08:45.308208",
+  "subreddits": [
+    {
+      "name": "r/CRM",
+      "url": "https://www.reddit.com/r/CRM/",
+      "members": 20000,
+      "category": "CRM-Dedicated",
+      "description": "Customer Relationship Management (CRM) is a model for managing a company's interactions with current and future customers. Involves using technology to organize, automate, and synchronize sales, marketing, customer service, and technical support.",
+      "focus": "General CRM discussion, tool comparisons, implementation advice",
+      "activity_level": "High",
+      "pros": [
+        "Dedicated CRM community - all posts are CRM-relevant",
+        "Good mix of vendors, consultants, and end-users",
+        "Active discussions on tool comparisons",
+        "Welcoming to beginners asking 'which CRM should I use?'"
+      ],
+      "cons": [
+        "Some vendor self-promotion / spam",
+        "Smaller community means fewer daily posts"
+      ],
+      "best_for": "Direct CRM tool comparisons and implementation questions",
+      "score": 9
+    },
+    {
+      "name": "r/CRMSoftware",
+      "url": "https://www.reddit.com/r/CRMSoftware/",
+      "members": 5000,
+      "category": "CRM-Dedicated",
+      "description": "Created for CRM professionals to discuss new technologies, best practices, and implementation processes. Also a place where business owners can ask questions about setting up their own CRM system.",
+      "focus": "CRM software reviews, best practices, implementation",
+      "activity_level": "Medium",
+      "pros": [
+        "Focused on CRM software specifically",
+        "Professional-oriented discussions",
+        "Good for implementation and setup questions"
+      ],
+      "cons": [
+        "Smaller community, less frequent posting",
+        "More vendor-driven content"
+      ],
+      "best_for": "CRM implementation and technical setup questions",
+      "score": 7
+    },
+    {
+      "name": "r/All_About_CRM",
+      "url": "https://www.reddit.com/r/All_About_CRM/",
+      "members": 2000,
+      "category": "CRM-Dedicated",
+      "description": "A professional community dedicated to Customer Relationship Management. Members exchange insights on implementation strategies, automation, data analytics, and integrations.",
+      "focus": "CRM strategy, automation, analytics, integrations",
+      "activity_level": "Low-Medium",
+      "pros": [
+        "Professional tone",
+        "Focus on strategy and analytics, not just tools",
+        "Good for advanced CRM topics"
+      ],
+      "cons": [
+        "Small community",
+        "Less frequent posts"
+      ],
+      "best_for": "Advanced CRM strategy and analytics discussions",
+      "score": 5
+    },
+    {
+      "name": "r/sales",
+      "url": "https://www.reddit.com/r/sales/",
+      "members": 510000,
+      "category": "Sales & Business",
+      "description": "The digital equivalent of a high-energy sales floor where professionals share what's working right now. Raw, honest discussions about closing techniques, cold outreach, and CRM platform comparisons.",
+      "focus": "Sales strategies, CRM as a sales tool, pipeline management",
+      "activity_level": "Very High",
+      "pros": [
+        "Massive, very active community",
+        "Real-world CRM usage stories from sales professionals",
+        "Honest, unfiltered opinions on CRM tools",
+        "Great for understanding CRM from a sales perspective"
+      ],
+      "cons": [
+        "CRM is only one topic among many",
+        "Need to search/filter for CRM-specific threads",
+        "Can be noisy with non-CRM content"
+      ],
+      "best_for": "Understanding how sales teams actually use CRMs day-to-day",
+      "score": 8
+    },
+    {
+      "name": "r/smallbusiness",
+      "url": "https://www.reddit.com/r/smallbusiness/",
+      "members": 1900000,
+      "category": "Sales & Business",
+      "description": "A go-to spot for everyday business challenges. Threads on CRM selection, payroll, local SEO, and more gather real-world tips over time.",
+      "focus": "Small business operations including CRM selection",
+      "activity_level": "Very High",
+      "pros": [
+        "Huge community with tons of activity",
+        "CRM advice from actual small business owners",
+        "Practical, budget-conscious recommendations",
+        "Good for 'What CRM for a 5-person team?' questions"
+      ],
+      "cons": [
+        "CRM is a tiny fraction of overall content",
+        "Advice may skew toward simpler/cheaper tools"
+      ],
+      "best_for": "Small business CRM selection on a budget",
+      "score": 7
+    },
+    {
+      "name": "r/Entrepreneur",
+      "url": "https://www.reddit.com/r/Entrepreneur/",
+      "members": 3500000,
+      "category": "Sales & Business",
+      "description": "One of Reddit's largest business communities. Strict anti-promotion rules mean organic, genuine CRM discussions.",
+      "focus": "Entrepreneurship, startups, business tools including CRM",
+      "activity_level": "Very High",
+      "pros": [
+        "Enormous community",
+        "Anti-spam rules mean higher quality recommendations",
+        "Growth-stage CRM scaling discussions"
+      ],
+      "cons": [
+        "CRM is a very small fraction of content",
+        "Broad audience - advice may not be specialized"
+      ],
+      "best_for": "CRM for startups and growing businesses",
+      "score": 6
+    },
+    {
+      "name": "r/SaaS",
+      "url": "https://www.reddit.com/r/SaaS/",
+      "members": 200000,
+      "category": "Tech & SaaS",
+      "description": "Discussions about Software as a Service products, including CRM platforms. Good for understanding the SaaS landscape.",
+      "focus": "SaaS products, CRM platforms, integrations",
+      "activity_level": "High",
+      "pros": [
+        "Tech-savvy community",
+        "Good for CRM integration and API discussions",
+        "Understand CRM within the broader SaaS ecosystem"
+      ],
+      "cons": [
+        "CRM is one of many SaaS categories discussed",
+        "More builder-focused than user-focused"
+      ],
+      "best_for": "CRM from a technical/SaaS perspective",
+      "score": 6
+    },
+    {
+      "name": "r/salesforce",
+      "url": "https://www.reddit.com/r/salesforce/",
+      "members": 85000,
+      "category": "Product-Specific CRM",
+      "description": "Dedicated community for Salesforce users, admins, developers, and consultants. Deep technical discussions.",
+      "focus": "Salesforce platform, administration, development, careers",
+      "activity_level": "High",
+      "pros": [
+        "Deep expertise on the #1 CRM platform",
+        "Great for Salesforce-specific questions",
+        "Active admin and developer community",
+        "Career advice for Salesforce professionals"
+      ],
+      "cons": [
+        "Only relevant if you use/consider Salesforce",
+        "Very platform-specific"
+      ],
+      "best_for": "Salesforce users and professionals",
+      "score": 8
+    },
+    {
+      "name": "r/hubspot",
+      "url": "https://www.reddit.com/r/hubspot/",
+      "members": 15000,
+      "category": "Product-Specific CRM",
+      "description": "Community for HubSpot users to discuss the CRM, marketing, sales, and service hubs. Officially encouraged by HubSpot.",
+      "focus": "HubSpot CRM, marketing automation, inbound sales",
+      "activity_level": "Medium-High",
+      "pros": [
+        "Officially supported community",
+        "Good for HubSpot-specific troubleshooting",
+        "Covers full HubSpot ecosystem"
+      ],
+      "cons": [
+        "Only relevant for HubSpot users",
+        "Some corporate influence"
+      ],
+      "best_for": "HubSpot users and evaluators",
+      "score": 7
+    },
+    {
+      "name": "r/HighLevel",
+      "url": "https://www.reddit.com/r/HighLevel/",
+      "members": 8000,
+      "category": "Product-Specific CRM",
+      "description": "Community to discuss GoHighLevel - CRM, SaaS, and Social Media Marketing Agency topics.",
+      "focus": "GoHighLevel CRM, agency management, white-label SaaS",
+      "activity_level": "Medium",
+      "pros": [
+        "Active community for agency-focused CRM",
+        "Good for GoHighLevel tips and tricks",
+        "Agency-specific use cases"
+      ],
+      "cons": [
+        "Niche - only for GoHighLevel users",
+        "Smaller community"
+      ],
+      "best_for": "Marketing agencies using GoHighLevel",
+      "score": 6
+    },
+    {
+      "name": "r/zoho",
+      "url": "https://www.reddit.com/r/zoho/",
+      "members": 10000,
+      "category": "Product-Specific CRM",
+      "description": "Community for Zoho suite users including Zoho CRM, Zoho One, and the broader Zoho ecosystem.",
+      "focus": "Zoho CRM and full Zoho suite",
+      "activity_level": "Medium",
+      "pros": [
+        "Good for Zoho-specific questions",
+        "Covers full Zoho ecosystem, not just CRM",
+        "Budget-friendly CRM discussions"
+      ],
+      "cons": [
+        "Only relevant for Zoho users",
+        "Mixed with non-CRM Zoho products"
+      ],
+      "best_for": "Zoho CRM users and evaluators",
+      "score": 6
+    }
+  ],
+  "top_crm_tools": [
+    {
+      "name": "HubSpot",
+      "sentiment": "Positive",
+      "notes": "Most discussed; loved for free tier, criticized for pricing at scale"
+    },
+    {
+      "name": "Zoho CRM",
+      "sentiment": "Positive",
+      "notes": "Praised for value; full suite integration is a big draw"
+    },
+    {
+      "name": "Pipedrive",
+      "sentiment": "Very Positive",
+      "notes": "Favorite among small sales teams; simple and effective"
+    },
+    {
+      "name": "GoHighLevel",
+      "sentiment": "Mixed",
+      "notes": "Loved by agencies; criticized for learning curve and bugs"
+    },
+    {
+      "name": "Monday CRM",
+      "sentiment": "Positive",
+      "notes": "Liked for flexibility; some say it's more PM than CRM"
+    },
+    {
+      "name": "Salesforce",
+      "sentiment": "Mixed",
+      "notes": "Industry standard but expensive and complex; best with a dedicated admin"
+    },
+    {
+      "name": "Folk CRM",
+      "sentiment": "Positive",
+      "notes": "Rising star for lightweight CRM needs"
+    },
+    {
+      "name": "Close CRM",
+      "sentiment": "Positive",
+      "notes": "Popular with startups and inside sales teams"
+    }
+  ]
+}
