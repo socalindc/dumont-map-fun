@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slido Clone - Live Audience Interaction</title>
+<style>
+:root {
+  --primary: #1aa86c;
+  --primary-dark: #158a58;
+  --primary-light: #e6f7ef;
+  --danger: #e74c3c;
+  --warning: #f39c12;
+  --bg: #f5f6f8;
+  --card: #fff;
+  --text: #1a1a2e;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  border-radius: 8px;
+  padding: 10px 20px;
+  transition: all 0.15s;
+}
+button:hover { opacity: 0.9; transform: translateY(-1px); }
+button:active { transform: translateY(0); }
+input, textarea {
+  font-family: inherit;
+  font-size: 15px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  width: 100%;
+  transition: border-color 0.15s;
+  outline: none;
+}
+input:focus, textarea:focus { border-color: var(--primary); }
+.btn-primary { background: var(--primary); color: #fff; font-weight: 600; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); font-weight: 600; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-small { padding: 6px 12px; font-size: 12px; }
+.btn-icon { background: none; padding: 6px; font-size: 18px; }
+
+/* ── Landing ─────────────────────────── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+#landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+.landing-logo {
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 8px;
+  letter-spacing: -1px;
+}
+.landing-sub {
+  color: var(--text-muted);
+  margin-bottom: 40px;
+  font-size: 18px;
+}
+.landing-cards {
+  display: flex;
+  gap: 20px;
+  max-width: 700px;
+  width: 100%;
+}
+.landing-card {
+  flex: 1;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.landing-card h3 { margin-bottom: 12px; font-size: 20px; }
+.landing-card p { color: var(--text-muted); margin-bottom: 20px; font-size: 14px; }
+.landing-card input { margin-bottom: 12px; text-align: center; }
+.join-code-input { font-size: 24px !important; letter-spacing: 6px; font-weight: 700; }
+
+/* ── Header ──────────────────────────── */
+.app-header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.header-logo { font-size: 22px; font-weight: 800; color: var(--primary); }
+.room-code {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+.header-right { display: flex; align-items: center; gap: 12px; }
+.participant-badge {
+  background: var(--bg);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── Tabs ─────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 0;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+}
+.tab {
+  padding: 14px 24px;
+  background: none;
+  border-radius: 0;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 3px solid transparent;
+  position: relative;
+}
+.tab:hover { color: var(--text); transform: none; }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab-badge {
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: 6px;
+}
+
+/* ── Content ─────────────────────────── */
+.content { max-width: 800px; margin: 0 auto; padding: 24px; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── Q&A ─────────────────────────────── */
+.qa-form { display: flex; gap: 10px; margin-bottom: 24px; }
+.qa-form textarea { resize: none; min-height: 48px; flex: 1; }
+.qa-sort { display: flex; gap: 8px; margin-bottom: 16px; }
+.qa-sort button {
+  padding: 6px 14px;
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.qa-sort button.active { background: var(--primary-light); color: var(--primary); }
+
+.question-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  transition: all 0.2s;
+}
+.question-card.answered { opacity: 0.6; }
+.question-card.pinned { border: 2px solid var(--primary); background: var(--primary-light); }
+.vote-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px;
+  background: var(--bg);
+  border-radius: 8px;
+  min-width: 48px;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 13px;
+  transition: all 0.15s;
+}
+.vote-btn:hover { background: var(--primary-light); color: var(--primary); transform: none; }
+.vote-btn.voted { background: var(--primary); color: #fff; }
+.vote-btn .arrow { font-size: 16px; }
+.question-body { flex: 1; }
+.question-text { font-size: 15px; line-height: 1.5; margin-bottom: 6px; }
+.question-meta { font-size: 12px; color: var(--text-muted); }
+.question-actions { display: flex; gap: 4px; }
+
+/* ── Polls ────────────────────────────── */
+.poll-create { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 24px; }
+.poll-create h3 { margin-bottom: 14px; }
+.poll-options-list { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+.poll-option-row { display: flex; gap: 8px; align-items: center; }
+.poll-option-row input { flex: 1; }
+.add-option-btn { color: var(--primary); background: none; font-weight: 600; padding: 6px 0; }
+
+.poll-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.poll-card h3 { margin-bottom: 16px; font-size: 18px; }
+.poll-status {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 8px;
+}
+.poll-status.active { background: #dcfce7; color: #166534; }
+.poll-status.closed { background: #fee2e2; color: #991b1b; }
+.poll-option {
+  padding: 12px 16px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.15s;
+}
+.poll-option:hover { border-color: var(--primary); }
+.poll-option.selected { border-color: var(--primary); background: var(--primary-light); }
+.poll-option.disabled { cursor: default; opacity: 0.8; }
+.poll-bar {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--primary-light);
+  transition: width 0.5s ease;
+  z-index: 0;
+}
+.poll-option-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.poll-option-text { font-weight: 500; }
+.poll-option-pct { font-weight: 700; color: var(--primary); }
+.poll-total { text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 12px; }
+.poll-actions { display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end; }
+
+/* ── Word Cloud ──────────────────────── */
+.wc-create { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 24px; }
+.wc-card { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 16px; }
+.wc-card h3 { margin-bottom: 16px; }
+.wc-submit { display: flex; gap: 10px; margin-bottom: 20px; }
+.wc-submit input { flex: 1; }
+.word-cloud-display {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 30px;
+  min-height: 200px;
+  background: var(--bg);
+  border-radius: var(--radius);
+}
+.cloud-word {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+.wc-entry-count { text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 12px; }
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state h3 { margin-bottom: 8px; color: var(--text); }
+
+@media (max-width: 600px) {
+  .landing-cards { flex-direction: column; }
+  .content { padding: 16px; }
+  .tabs { padding: 0 8px; overflow-x: auto; }
+  .tab { padding: 12px 16px; white-space: nowrap; }
+  .qa-form { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ Landing Screen ═══ -->
+<div id="landing" class="screen active">
+  <div class="landing-logo">Slido</div>
+  <div class="landing-sub">Live Q&A, Polls & Word Clouds</div>
+  <div class="landing-cards">
+    <div class="landing-card">
+      <h3>Join an Event</h3>
+      <p>Enter the room code shared by your host</p>
+      <input type="text" id="joinCode" class="join-code-input" placeholder="000000" maxlength="6" inputmode="numeric">
+      <input type="text" id="joinName" placeholder="Your name">
+      <button class="btn-primary" style="width:100%" onclick="joinRoom()">Join</button>
+    </div>
+    <div class="landing-card">
+      <h3>Host an Event</h3>
+      <p>Create a room and share the code with your audience</p>
+      <input type="text" id="hostName" placeholder="Your name / event name">
+      <button class="btn-primary" style="width:100%" onclick="createRoom()">Create Room</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ App Screen ═══ -->
+<div id="app" class="screen">
+  <div class="app-header">
+    <div class="header-left">
+      <div class="header-logo">Slido</div>
+      <div class="room-code" id="displayCode"></div>
+    </div>
+    <div class="header-right">
+      <span class="participant-badge" id="participantCount">0 participants</span>
+      <button class="btn-outline btn-small" onclick="copyCode()">Copy Code</button>
+      <button class="btn-small" style="background:var(--bg)" onclick="leaveRoom()">Leave</button>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabBar">
+    <button class="tab active" data-tab="qa" onclick="switchTab('qa')">Q&A <span class="tab-badge" id="qaBadge">0</span></button>
+    <button class="tab" data-tab="polls" onclick="switchTab('polls')">Polls <span class="tab-badge" id="pollsBadge">0</span></button>
+    <button class="tab" data-tab="wordcloud" onclick="switchTab('wordcloud')">Word Cloud</button>
+  </div>
+
+  <div class="content">
+    <!-- ── Q&A Tab ── -->
+    <div class="tab-content active" id="tab-qa">
+      <div class="qa-form">
+        <textarea id="questionInput" placeholder="Type your question..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitQuestion()}"></textarea>
+        <button class="btn-primary" onclick="submitQuestion()">Ask</button>
+      </div>
+      <div class="qa-sort">
+        <button class="active" data-sort="popular" onclick="setSort('popular')">Popular</button>
+        <button data-sort="recent" onclick="setSort('recent')">Recent</button>
+      </div>
+      <div id="questionsList"></div>
+    </div>
+
+    <!-- ── Polls Tab ── -->
+    <div class="tab-content" id="tab-polls">
+      <div id="pollCreateArea"></div>
+      <div id="pollsList"></div>
+    </div>
+
+    <!-- ── Word Cloud Tab ── -->
+    <div class="tab-content" id="tab-wordcloud">
+      <div id="wcCreateArea"></div>
+      <div id="wcList"></div>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+let state = { isHost: false, roomCode: null, questions: [], polls: [], wordClouds: [], mySocketId: null };
+let qaSort = "popular";
+
+// ═══ Room Management ═══════════════════════════════════
+
+function createRoom() {
+  const hostName = document.getElementById("hostName").value.trim();
+  if (!hostName) return alert("Please enter a name");
+  socket.emit("create-room", { hostName }, (res) => {
+    if (!res.ok) return alert("Failed to create room");
+    state.isHost = true;
+    state.roomCode = res.room.code;
+    enterApp(res.room);
+  });
+}
+
+function joinRoom() {
+  const code = document.getElementById("joinCode").value.trim();
+  const name = document.getElementById("joinName").value.trim() || "Anonymous";
+  if (!code || code.length !== 6) return alert("Enter a 6-digit room code");
+  socket.emit("join-room", { code, name }, (res) => {
+    if (!res.ok) return alert(res.error || "Failed to join");
+    state.isHost = false;
+    state.roomCode = res.room.code;
+    enterApp(res.room);
+  });
+}
+
+function enterApp(room) {
+  document.getElementById("landing").classList.remove("active");
+  document.getElementById("app").classList.add("active");
+  document.getElementById("displayCode").textContent = room.code;
+  state.questions = room.questions;
+  state.polls = room.polls;
+  state.wordClouds = room.wordClouds;
+  renderAll();
+  renderHostControls();
+}
+
+function leaveRoom() {
+  location.reload();
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(state.roomCode).catch(() => {});
+  const btn = event.target;
+  btn.textContent = "Copied!";
+  setTimeout(() => btn.textContent = "Copy Code", 1500);
+}
+
+// ═══ Tabs ══════════════════════════════════════════════
+
+function switchTab(tab) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tab));
+  document.querySelectorAll(".tab-content").forEach(c => c.classList.toggle("active", c.id === "tab-" + tab));
+}
+
+// ═══ Q&A ═══════════════════════════════════════════════
+
+function submitQuestion() {
+  const input = document.getElementById("questionInput");
+  const text = input.value.trim();
+  if (!text) return;
+  socket.emit("submit-question", { text }, () => { input.value = ""; });
+}
+
+function setSort(sort) {
+  qaSort = sort;
+  document.querySelectorAll(".qa-sort button").forEach(b => b.classList.toggle("active", b.dataset.sort === sort));
+  renderQuestions();
+}
+
+function renderQuestions() {
+  const list = document.getElementById("questionsList");
+  let qs = [...state.questions];
+  // pinned first
+  qs.sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    if (qaSort === "popular") return b.votes - a.votes;
+    return b.createdAt - a.createdAt;
+  });
+
+  if (qs.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">&#x1F4AC;</div><h3>No questions yet</h3><p>Be the first to ask a question!</p></div>';
+    return;
+  }
+
+  list.innerHTML = qs.map(q => {
+    const voted = q.votedBy.includes(socket.id);
+    return `
+    <div class="question-card ${q.answered ? 'answered' : ''} ${q.pinned ? 'pinned' : ''}">
+      <button class="vote-btn ${voted ? 'voted' : ''}" onclick="voteQuestion('${q.id}')">
+        <span class="arrow">&#9650;</span>
+        ${q.votes}
+      </button>
+      <div class="question-body">
+        <div class="question-text">${escHtml(q.text)}</div>
+        <div class="question-meta">
+          ${escHtml(q.author)} &middot; ${timeAgo(q.createdAt)}
+          ${q.answered ? ' &middot; <span style="color:var(--primary)">&#10003; Answered</span>' : ''}
+          ${q.pinned ? ' &middot; <span style="color:var(--warning)">&#x1F4CC; Pinned</span>' : ''}
+        </div>
+      </div>
+      ${state.isHost ? `
+      <div class="question-actions">
+        <button class="btn-icon" title="Pin" onclick="pinQuestion('${q.id}')">&#x1F4CC;</button>
+        <button class="btn-icon" title="Mark answered" onclick="markAnswered('${q.id}')">&#10003;</button>
+        <button class="btn-icon" title="Delete" onclick="deleteQuestion('${q.id}')">&#x1F5D1;</button>
+      </div>` : ''}
+    </div>`;
+  }).join("");
+
+  document.getElementById("qaBadge").textContent = state.questions.filter(q => !q.answered).length;
+}
+
+function voteQuestion(id) { socket.emit("vote-question", { id }); }
+function pinQuestion(id) { socket.emit("pin-question", { id }); }
+function markAnswered(id) { socket.emit("mark-answered", { id }); }
+function deleteQuestion(id) { socket.emit("delete-question", { id }); }
+
+// ═══ Polls ═════════════════════════════════════════════
+
+function renderHostControls() {
+  if (!state.isHost) {
+    document.getElementById("pollCreateArea").innerHTML = "";
+    document.getElementById("wcCreateArea").innerHTML = "";
+    return;
+  }
+
+  document.getElementById("pollCreateArea").innerHTML = `
+    <div class="poll-create">
+      <h3>Create a Poll</h3>
+      <input type="text" id="pollQuestion" placeholder="Your poll question" style="margin-bottom:10px">
+      <div class="poll-options-list" id="pollOptionsList">
+        <div class="poll-option-row"><input type="text" placeholder="Option 1" class="poll-opt-input"><button class="btn-icon" onclick="this.parentElement.remove()">&#10005;</button></div>
+        <div class="poll-option-row"><input type="text" placeholder="Option 2" class="poll-opt-input"><button class="btn-icon" onclick="this.parentElement.remove()">&#10005;</button></div>
+      </div>
+      <button class="add-option-btn" onclick="addPollOption()">+ Add option</button>
+      <div style="margin-top:14px">
+        <button class="btn-primary" onclick="createPoll()">Launch Poll</button>
+      </div>
+    </div>`;
+
+  document.getElementById("wcCreateArea").innerHTML = `
+    <div class="wc-create">
+      <h3>Create a Word Cloud</h3>
+      <input type="text" id="wcPrompt" placeholder="e.g. Describe this event in one word" style="margin-bottom:12px">
+      <button class="btn-primary" onclick="createWordCloud()">Launch Word Cloud</button>
+    </div>`;
+}
+
+function addPollOption() {
+  const list = document.getElementById("pollOptionsList");
+  const n = list.children.length + 1;
+  const row = document.createElement("div");
+  row.className = "poll-option-row";
+  row.innerHTML = `<input type="text" placeholder="Option ${n}" class="poll-opt-input"><button class="btn-icon" onclick="this.parentElement.remove()">&#10005;</button>`;
+  list.appendChild(row);
+}
+
+function createPoll() {
+  const question = document.getElementById("pollQuestion").value.trim();
+  const options = [...document.querySelectorAll(".poll-opt-input")].map(i => i.value.trim()).filter(Boolean);
+  if (!question) return alert("Enter a question");
+  if (options.length < 2) return alert("Add at least 2 options");
+  socket.emit("create-poll", { question, options }, () => {
+    document.getElementById("pollQuestion").value = "";
+    renderHostControls();
+  });
+}
+
+function renderPolls() {
+  const list = document.getElementById("pollsList");
+  const polls = [...state.polls].reverse();
+
+  if (polls.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">&#x1F4CA;</div><h3>No polls yet</h3><p>' +
+      (state.isHost ? 'Create your first poll above!' : 'The host hasn\'t created a poll yet.') + '</p></div>';
+    return;
+  }
+
+  list.innerHTML = polls.map(poll => {
+    const totalVotes = poll.options.reduce((s, o) => s + o.votes, 0);
+    const showResults = poll.showResults || !poll.active || state.isHost;
+    const myVotes = poll.options.map((o, i) => o.votedBy.includes(socket.id) ? i : -1).filter(i => i >= 0);
+
+    return `
+    <div class="poll-card">
+      <h3>${escHtml(poll.question)}
+        <span class="poll-status ${poll.active ? 'active' : 'closed'}">${poll.active ? 'LIVE' : 'CLOSED'}</span>
+      </h3>
+      ${poll.options.map((opt, i) => {
+        const pct = totalVotes ? Math.round(opt.votes / totalVotes * 100) : 0;
+        const selected = myVotes.includes(i);
+        const disabled = !poll.active;
+        return `
+        <div class="poll-option ${selected ? 'selected' : ''} ${disabled ? 'disabled' : ''}"
+             onclick="${poll.active ? `votePoll('${poll.id}', ${i})` : ''}">
+          ${showResults ? `<div class="poll-bar" style="width:${pct}%"></div>` : ''}
+          <div class="poll-option-content">
+            <span class="poll-option-text">${escHtml(opt.text)}</span>
+            ${showResults ? `<span class="poll-option-pct">${pct}% (${opt.votes})</span>` : ''}
+          </div>
+        </div>`;
+      }).join("")}
+      <div class="poll-total">${totalVotes} vote${totalVotes !== 1 ? 's' : ''}</div>
+      ${state.isHost ? `
+      <div class="poll-actions">
+        <button class="btn-small btn-outline" onclick="togglePollResults('${poll.id}')">${poll.showResults ? 'Hide' : 'Show'} Results</button>
+        ${poll.active ? `<button class="btn-small btn-danger" onclick="closePoll('${poll.id}')">Close Poll</button>` : ''}
+        <button class="btn-small" style="background:var(--bg)" onclick="deletePoll('${poll.id}')">Delete</button>
+      </div>` : ''}
+    </div>`;
+  }).join("");
+
+  document.getElementById("pollsBadge").textContent = state.polls.filter(p => p.active).length;
+}
+
+function votePoll(pollId, optionIndex) { socket.emit("vote-poll", { pollId, optionIndex }); }
+function togglePollResults(pollId) { socket.emit("toggle-poll-results", { pollId }); }
+function closePoll(pollId) { socket.emit("close-poll", { pollId }); }
+function deletePoll(pollId) { socket.emit("delete-poll", { pollId }); }
+
+// ═══ Word Clouds ═══════════════════════════════════════
+
+const cloudColors = ["#1aa86c","#3498db","#e74c3c","#f39c12","#9b59b6","#e67e22","#1abc9c","#e84393","#6c5ce7","#00b894"];
+
+function createWordCloud() {
+  const prompt = document.getElementById("wcPrompt").value.trim();
+  if (!prompt) return alert("Enter a prompt");
+  socket.emit("create-wordcloud", { prompt }, () => {
+    document.getElementById("wcPrompt").value = "";
+  });
+}
+
+function renderWordClouds() {
+  const list = document.getElementById("wcList");
+  const wcs = [...state.wordClouds].reverse();
+
+  if (wcs.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">&#x2601;</div><h3>No word clouds yet</h3><p>' +
+      (state.isHost ? 'Create your first word cloud above!' : 'The host hasn\'t started a word cloud yet.') + '</p></div>';
+    return;
+  }
+
+  list.innerHTML = wcs.map(wc => {
+    // Count word frequencies
+    const freq = {};
+    wc.entries.forEach(e => {
+      const w = e.word.toLowerCase();
+      freq[w] = (freq[w] || 0) + 1;
+    });
+    const maxFreq = Math.max(...Object.values(freq), 1);
+    const words = Object.entries(freq).sort((a, b) => b[1] - a[1]);
+
+    const myEntries = wc.entries.filter(e => e.socketId === socket.id).length;
+
+    return `
+    <div class="wc-card">
+      <h3>${escHtml(wc.prompt)}
+        <span class="poll-status ${wc.active ? 'active' : 'closed'}">${wc.active ? 'LIVE' : 'CLOSED'}</span>
+      </h3>
+      ${wc.active && myEntries < 3 ? `
+      <div class="wc-submit">
+        <input type="text" id="wcInput-${wc.id}" placeholder="Type a word or short phrase..." maxlength="40"
+               onkeydown="if(event.key==='Enter'){submitWord('${wc.id}')}">
+        <button class="btn-primary" onclick="submitWord('${wc.id}')">Submit</button>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin:-12px 0 16px">${3 - myEntries} submission${3 - myEntries !== 1 ? 's' : ''} remaining</div>
+      ` : wc.active ? '<div style="font-size:13px;color:var(--text-muted);margin-bottom:16px">You\'ve used all 3 submissions</div>' : ''}
+      <div class="word-cloud-display">
+        ${words.length === 0 ? '<span style="color:var(--text-muted)">Waiting for responses...</span>' :
+          words.map(([word, count]) => {
+            const size = 14 + (count / maxFreq) * 32;
+            const color = cloudColors[Math.abs(hashCode(word)) % cloudColors.length];
+            return `<span class="cloud-word" style="font-size:${size}px;color:${color};background:${color}15">${escHtml(word)}${count > 1 ? ` (${count})` : ''}</span>`;
+          }).join("")}
+      </div>
+      <div class="wc-entry-count">${wc.entries.length} response${wc.entries.length !== 1 ? 's' : ''}</div>
+      ${state.isHost && wc.active ? `
+      <div class="poll-actions">
+        <button class="btn-small btn-danger" onclick="closeWordCloud('${wc.id}')">Close</button>
+      </div>` : ''}
+    </div>`;
+  }).join("");
+}
+
+function submitWord(wcId) {
+  const input = document.getElementById("wcInput-" + wcId);
+  if (!input) return;
+  const word = input.value.trim();
+  if (!word) return;
+  socket.emit("submit-word", { wcId, word });
+  input.value = "";
+}
+
+function closeWordCloud(wcId) { socket.emit("close-wordcloud", { wcId }); }
+
+// ═══ Socket Events ═════════════════════════════════════
+
+socket.on("questions-updated", (questions) => { state.questions = questions; renderQuestions(); });
+socket.on("polls-updated", (polls) => { state.polls = polls; renderPolls(); });
+socket.on("wordclouds-updated", (wcs) => { state.wordClouds = wcs; renderWordClouds(); });
+socket.on("participant-count", (count) => {
+  document.getElementById("participantCount").textContent = count + " participant" + (count !== 1 ? "s" : "");
+});
+
+// ═══ Helpers ═══════════════════════════════════════════
+
+function renderAll() { renderQuestions(); renderPolls(); renderWordClouds(); }
+
+function escHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function timeAgo(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return "just now";
+  if (s < 3600) return Math.floor(s / 60) + "m ago";
+  if (s < 86400) return Math.floor(s / 3600) + "h ago";
+  return Math.floor(s / 86400) + "d ago";
+}
+
+function hashCode(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+  return h;
+}
+
+// Auto-resize textarea
+document.getElementById("questionInput")?.addEventListener("input", function() {
+  this.style.height = "auto";
+  this.style.height = Math.min(this.scrollHeight, 120) + "px";
+});
+</script>
+</body>
+</html>
